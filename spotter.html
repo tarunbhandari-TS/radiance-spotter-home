@@ -7,7 +7,7 @@
     <meta name="description" content="Standalone Radiance Spotter surface for ThoughtSpot.">
     <link rel="icon" type="image/png" href="assets/thoughtspot-favicon.png">
     <link rel="apple-touch-icon" href="assets/thoughtspot-apple-touch-icon.png">
-    <link rel="stylesheet" href="styles.css?v=20260619-spotter-fadein">
+    <link rel="stylesheet" href="styles.css?v=20260619-seamless-nav">
     <link rel="stylesheet" href="css/background.css?v=20260619-bg-fullvp">
 </head>
 <body class="spotter-page">
@@ -214,6 +214,70 @@
                 </section>
 
                 <p class="disclaimer-bar">Spotter responses should be reviewed. <a class="disclaimer-bar-learn" href="#">Learn more.</a></p>
+
+                <section class="home-panels" aria-label="Home dashboard">
+                    <div class="panel-row">
+                        <article class="panel recents-panel">
+                            <div class="panel-head">
+                                <h2>Recents</h2>
+                            </div>
+                            <div class="panel-body recents-list">
+                                <button class="recent-item" type="button">
+                                    <span class="item-icon sparkles-icon" aria-hidden="true"></span>
+                                    <span><strong>Quarterly profit dashboard</strong><small>Today</small></span>
+                                </button>
+                                <button class="recent-item" type="button">
+                                    <span class="item-icon liveboard-icon" aria-hidden="true"></span>
+                                    <span><strong>Customer attrition by team</strong><small>Yesterday</small></span>
+                                </button>
+                                <button class="recent-item" type="button">
+                                    <span class="item-icon answer-icon" aria-hidden="true"></span>
+                                    <span><strong>New leads by marketing channel</strong><small>2 days ago</small></span>
+                                </button>
+                                <button class="recent-item" type="button">
+                                    <span class="item-icon answer-icon" aria-hidden="true"></span>
+                                    <span><strong>Adelaide product pipeline</strong><small>3 weeks ago</small></span>
+                                </button>
+                                <button class="recent-item" type="button">
+                                    <span class="item-icon sparkles-icon" aria-hidden="true"></span>
+                                    <span><strong>Weekly active users</strong><small>3 weeks ago</small></span>
+                                </button>
+                            </div>
+                        </article>
+
+                        <article class="panel watchlist-panel">
+                            <div class="panel-head">
+                                <h2>Watchlist</h2>
+                                <button class="text-action" id="add-kpi" type="button">
+                                    <span class="plus-mini" aria-hidden="true"></span>
+                                    <span>Add KPI</span>
+                                </button>
+                            </div>
+                            <div class="panel-body watchlist" id="watchlist">
+                                <div class="watch-row">
+                                    <span><strong>Total Revenue by Product</strong><small>WoW</small></span>
+                                    <span><strong>88.888M</strong><small class="trend-up">+20.74%</small></span>
+                                </div>
+                                <div class="watch-row">
+                                    <span><strong>Sessions by Traffic Source</strong><small>MoM</small></span>
+                                    <span><strong>10.07M</strong><small class="trend-up">+20.74%</small></span>
+                                </div>
+                                <div class="watch-row">
+                                    <span><strong>Conversion Rate by Marketing</strong><small>WoW</small></span>
+                                    <span><strong>6.3%</strong><small class="trend-down">-20.74%</small></span>
+                                </div>
+                                <div class="watch-row">
+                                    <span><strong>Avg. Session Duration by Platform</strong><small>MoM</small></span>
+                                    <span><strong>14.52M</strong><small>0%</small></span>
+                                </div>
+                                <div class="watch-row">
+                                    <span><strong>New Users by Last Week</strong><small>MoM</small></span>
+                                    <span><strong>575.124M</strong><small class="trend-down">-20.74%</small></span>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+                </section>
             </main>
         </div>
     </div>
@@ -397,6 +461,6 @@
 
     <script src="js/radiance-renderer.js?v=20260608-top-focus-1"></script>
     <script src="js/background.js?v=20260608-top-focus-1"></script>
-    <script src="app.js?v=20260619-clean-urls"></script>
+    <script src="app.js?v=20260619-seamless-nav"></script>
 </body>
 </html>

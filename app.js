@@ -387,22 +387,113 @@
         });
     }
 
-    // Brand logo → navigate to data-href (used by spotter.html to go home)
+    // ── Seamless in-page Home ↔ Spotter navigation ───────────────────────────────
+    // A full reload re-seeds the radiance background (random per-blob phases) and
+    // flashes the page, so switching between Home and the Spotter landing is done
+    // in-page: the layout morphs and only the URL changes. The background canvas in
+    // #background-root is never unmounted, so it stays perfectly continuous.
+    function basePath() {
+        return window.location.pathname.replace(/[^/]*$/, "");
+    }
+
+    function setNavActiveByLabel(label) {
+        navLinks.forEach((l) => l.classList.toggle("is-active", l.textContent.trim() === label));
+    }
+
+    // FLIP: animate the prompt module from its current position to wherever the
+    // layout change (run inside `mutate`) leaves it, so the move reads as a glide.
+    function flipStack(mutate) {
+        const stack = document.querySelector(".home-stack");
+        if (!stack) { mutate(); return; }
+        const first = stack.getBoundingClientRect();
+        mutate();
+        const last = stack.getBoundingClientRect();
+        const dx = first.left - last.left;
+        const dy = first.top - last.top;
+        if (!dx && !dy) return;
+        stack.style.transition = "none";
+        stack.style.transform = `translate(${dx}px, ${dy}px)`;
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+            stack.style.transition = "transform 380ms cubic-bezier(0.22, 1, 0.36, 1)";
+            stack.style.transform = "";
+        }));
+        stack.addEventListener("transitionend", function done(e) {
+            if (e.propertyName !== "transform") return;
+            stack.style.transition = "";
+            stack.removeEventListener("transitionend", done);
+        });
+    }
+
+    function goToSpotterLanding(push) {
+        if (document.body.classList.contains("spotter-page")) return;
+        const panels = document.querySelector(".home-panels");
+        if (panels) { panels.style.transition = "opacity 140ms ease"; panels.style.opacity = "0"; }
+        window.setTimeout(() => {
+            flipStack(() => document.body.classList.add("spotter-page"));
+            if (panels) { panels.style.transition = ""; panels.style.opacity = ""; }
+            positionDisclaimer();
+        }, 140);
+        document.title = "Spotter - Radiance";
+        setNavActiveByLabel("Spotter");
+        if (push !== false) history.pushState({ page: "spotter-landing" }, "", basePath() + "Spotterhome");
+    }
+
+    function goToHome(push) {
+        if (!document.body.classList.contains("spotter-page")) return;
+        const panels = document.querySelector(".home-panels");
+        flipStack(() => {
+            document.body.classList.remove("spotter-page");
+            if (panels) { panels.style.transition = "none"; panels.style.opacity = "0"; }
+        });
+        if (panels) {
+            requestAnimationFrame(() => requestAnimationFrame(() => {
+                panels.style.transition = "opacity 280ms ease";
+                panels.style.opacity = "";
+            }));
+        }
+        positionDisclaimer();
+        document.title = "Home - Radiance";
+        setNavActiveByLabel("Home");
+        if (push !== false) history.pushState({ page: "home" }, "", basePath() + "Home");
+    }
+
+    // Brand logo → go Home. Seamless from the Spotter landing; only reloads when
+    // leaving the answer view (where the in-page state can't be rewound).
     const brandButton = document.querySelector(".brand-button[data-href]");
     if (brandButton) {
         brandButton.addEventListener("click", () => {
+            if (!transitionFired) {
+                if (document.body.classList.contains("spotter-page")) goToHome();
+                return;
+            }
             window.location.href = brandButton.dataset.href;
         });
     }
 
     modeButtons.forEach((button) => button.addEventListener("click", () => setMode(button.dataset.mode)));
     navLinks.forEach((link) => link.addEventListener("click", () => {
+        const label = link.textContent.trim();
+        // Home ↔ Spotter: morph in-page instead of reloading (keeps background alive).
+        if (link.dataset.href && (label === "Home" || label === "Spotter")) {
+            if (transitionFired) { window.location.href = link.dataset.href; return; }
+            if (label === "Spotter") goToSpotterLanding();
+            else goToHome();
+            if (window.matchMedia("(max-width: 860px)").matches) closeSidebar();
+            return;
+        }
         if (link.dataset.href) {
             window.location.href = link.dataset.href;
             return;
         }
         setActiveNav(link);
     }));
+
+    // Keep layout in sync with the URL on browser back/forward (no reload).
+    window.addEventListener("popstate", () => {
+        if (transitionFired) return;
+        if (/Spotterhome\/?$/i.test(window.location.pathname)) goToSpotterLanding(false);
+        else goToHome(false);
+    });
     railButtons.forEach((button) => button.addEventListener("click", () => setActiveRail(button)));
     mobileMenuButton.addEventListener("click", () => {
         if (sidebar.classList.contains("is-open")) closeSidebar();

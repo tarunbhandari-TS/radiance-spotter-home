@@ -3151,6 +3151,13 @@ html[data-theme="dark"] .prompt-add-menu {
     padding: 20vh 24px 24px;
 }
 
+/* On the Spotter landing the Home dashboard panels are not shown. They remain in
+   the DOM so navigating Home ↔ Spotter can morph in-page (seamless background)
+   instead of doing a full reload. */
+.spotter-page .home-panels {
+    display: none;
+}
+
 .prompt-model-button {
     display: flex;
     align-items: center;
