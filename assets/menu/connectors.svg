@@ -1,0 +1,6 @@
+<svg preserveAspectRatio="none" width="100%" height="100%" overflow="visible" style="display: block;" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="create-worksheet-l">
+<path id="Path" fill-rule="evenodd" clip-rule="evenodd" d="M2.66636 2.66667C1.68412 2.66667 0.888889 3.46301 0.888889 4.44444V13.3333C0.888889 14.3152 1.68483 15.1111 2.66667 15.1111H11.5556C12.5374 15.1111 13.3333 14.3152 13.3333 13.3333V8H8V2.66667H2.66636ZM6.22222 8V4.44444H2.66636L2.66649 8H6.22222ZM2.66654 9.77778H6.22222V13.3333H2.66667L2.66654 9.77778ZM8 9.77778H11.5556V13.3333H8V9.77778Z" fill="var(--fill-0, #777E8B)"/>
+<path id="Rectangle 1 (Stroke)" d="M10.6662 1.77729V5.33285H14.2217V1.77729H10.6662ZM16 7.11111H8.88889V0H14.2217C15.2034 0 15.9998 0.795679 16 1.77729V7.11111Z" fill="var(--fill-0, #777E8B)"/>
+</g>
+</svg>

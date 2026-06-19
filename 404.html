@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Redirecting…</title>
+    <script>
+        // Clean-URL fallback for static hosts (e.g. GitHub Pages).
+        // Maps /…/Spotterhome → spotter.html and everything else → index.html,
+        // preserving the hosting sub-path so it works at root or under /repo/.
+        (function () {
+            var path = window.location.pathname;
+            var base = path.replace(/(Home|Spotterhome)\/?$/i, "");
+            if (base.slice(-1) !== "/") base += "/";
+            var target = /Spotterhome\/?$/i.test(path) ? "spotter.html" : "index.html";
+            window.location.replace(base + target + window.location.search + window.location.hash);
+        })();
+    </script>
+</head>
+<body></body>
+</html>

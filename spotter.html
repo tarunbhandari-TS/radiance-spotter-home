@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Spotter - Radiance</title>
+    <meta name="description" content="Standalone Radiance Spotter surface for ThoughtSpot.">
+    <link rel="icon" type="image/png" href="assets/thoughtspot-favicon.png">
+    <link rel="apple-touch-icon" href="assets/thoughtspot-apple-touch-icon.png">
+    <link rel="stylesheet" href="styles.css?v=20260619-spotter-fadein">
+    <link rel="stylesheet" href="css/background.css?v=20260619-bg-fullvp">
+</head>
+<body class="spotter-page">
+    <div class="app-shell">
+        <header class="topbar">
+            <button class="icon-button mobile-menu-button" id="mobile-menu-button" type="button" aria-label="Open navigation" data-tooltip="Navigation">
+                <span class="hamburger-icon" aria-hidden="true"></span>
+            </button>
+
+            <button class="brand-button" type="button" aria-label="Go to Home" data-href="index.html">
+                <svg class="brand-mark" aria-label="ThoughtSpot" fill="none" preserveAspectRatio="xMidYMid meet" role="img" viewBox="0 0 24 24">
+                    <path d="M23.7108 0H0V4.39156H23.7108V0Z" fill="currentColor"></path>
+                    <path d="M23.7108 5.8554H14.7018V10.247H23.7108V5.8554Z" fill="currentColor"></path>
+                    <path d="M5.75601 5.8554H0V10.247H5.75601C7.90661 10.247 9.65962 12 9.65962 14.1506V23.7108H14.0512V14.1506C14.0512 9.57829 10.3283 5.8554 5.75601 5.8554Z" fill="currentColor"></path>
+                    <path d="M19.2108 16.6265C17.1777 16.6265 15.5241 18.2801 15.5241 20.3133C15.5241 22.3464 17.1777 24 19.2108 24C21.2439 24 22.8976 22.3464 22.8976 20.3133C22.8976 18.2801 21.2439 16.6265 19.2108 16.6265Z" fill="currentColor"></path>
+                </svg>
+            </button>
+
+            <div class="topbar-actions">
+                <button class="library-search" id="library-search-button" type="button" aria-label="Search in your library">
+                    <span class="icon icon-search" aria-hidden="true"></span>
+                    <span>Search in your library</span>
+                    <kbd>Cmd K</kbd>
+                </button>
+
+                <button class="icon-button theme-toggle" id="theme-toggle" type="button" aria-label="Switch to light mode" aria-pressed="true" data-tooltip="Theme">
+                    <span class="theme-icon-stack" aria-hidden="true">
+                        <span class="theme-mode-icon theme-mode-icon-moon"></span>
+                        <span class="theme-mode-icon theme-mode-icon-sun"></span>
+                    </span>
+                </button>
+
+                <button class="icon-button" type="button" aria-label="Help" data-tooltip="Help">
+                    <span class="help-icon" aria-hidden="true">?</span>
+                </button>
+
+                <button class="icon-button notification-button" id="notification-button" type="button" aria-label="Notifications" aria-expanded="false" data-tooltip="Notifications">
+                    <span class="bell-icon" aria-hidden="true"></span>
+                    <span class="notification-dot" aria-hidden="true"></span>
+                </button>
+
+                <div class="notification-popover" id="notification-popover" role="status" aria-live="polite">
+                    <strong>3 fresh changes</strong>
+                    <span>Revenue dashboard was updated 8 min ago.</span>
+                </div>
+
+                <button class="org-switcher" type="button" aria-label="Current organization">
+                    <span>Royal Enfield</span>
+                    <span class="chevron-icon" aria-hidden="true"></span>
+                    <img src="assets/user-avatar.png" alt="" class="user-avatar">
+                </button>
+            </div>
+        </header>
+
+        <div class="workspace">
+            <div class="sidebar-backdrop" id="sidebar-backdrop" hidden></div>
+            <aside class="sidebar" id="sidebar" aria-label="Primary navigation">
+                <div class="product-rail" role="tablist" aria-label="Product area">
+                    <button class="rail-button is-active" type="button" aria-label="Insights" aria-selected="true" data-rail="Insights" data-tooltip="Insights">
+                        <span class="rail-bars" aria-hidden="true"></span>
+                    </button>
+                    <button class="rail-button" type="button" aria-label="Data" aria-selected="false" data-rail="Data" data-tooltip="Data">
+                        <span class="icon icon-data" aria-hidden="true"></span>
+                    </button>
+                    <button class="rail-button" type="button" aria-label="Develop" aria-selected="false" data-rail="Develop" data-tooltip="Develop">
+                        <span class="icon icon-develop" aria-hidden="true"></span>
+                    </button>
+                    <button class="rail-button" type="button" aria-label="Admin" aria-selected="false" data-rail="Admin" data-tooltip="Admin">
+                        <span class="icon icon-settings" aria-hidden="true"></span>
+                    </button>
+                </div>
+
+                <div class="sidebar-main">
+                    <div class="sidebar-title-row">
+                        <h2 id="sidebar-title">Insights</h2>
+                        <button class="subtle-icon-button" type="button" aria-label="Create" data-tooltip="Create">
+                            <span class="plus-symbol" aria-hidden="true"></span>
+                        </button>
+                    </div>
+
+                    <nav class="nav-section" aria-label="Insights">
+                        <button class="nav-link" type="button" data-href="index.html">Home</button>
+                        <button class="nav-link is-active" type="button" data-href="spotter.html">Spotter</button>
+                        <button class="nav-link" type="button">Search data</button>
+                    </nav>
+
+                    <div class="nav-section">
+                        <p>Library</p>
+                        <button class="nav-link" type="button">Liveboards</button>
+                        <button class="nav-link" type="button">Answers</button>
+                        <button class="nav-link" type="button">Collections</button>
+                    </div>
+
+                    <div class="nav-section">
+                        <p>Analysis and alerts</p>
+                        <button class="nav-link" type="button">Subscriptions</button>
+                        <button class="nav-link" type="button">SpotIQ analysis</button>
+                    </div>
+                </div>
+            </aside>
+
+            <main class="home-main" id="main-content">
+                <section class="spotter-hero" aria-labelledby="hero-title">
+                    <div id="background-root" aria-hidden="true"></div>
+
+                    <div class="home-stack">
+                        <div class="spotter-copy">
+                            <p id="hero-title">Let's <span class="spotter-subtitle-brand">make sense</span> of your data together.</p>
+                        </div>
+
+                        <form class="prompt-bar" id="ask-form">
+                            <div class="prompt-bar-card">
+                                <div class="prompt-bar-input">
+                                    <textarea id="ask-input" rows="1" spellcheck="true" placeholder="Press &lsquo;/&rsquo; for skills and &lsquo;@&rsquo; to add context"></textarea>
+                                </div>
+
+                                <div class="prompt-bar-actions">
+                                    <div class="prompt-bar-left">
+                                        <div class="prompt-add-wrap">
+                                            <button class="prompt-icon-button" id="prompt-add-button" type="button" aria-label="Add context" aria-haspopup="menu" aria-expanded="false" aria-controls="prompt-add-menu" data-tooltip="Add context">
+                                                <span class="plus-symbol" aria-hidden="true"></span>
+                                            </button>
+
+                                            <div class="prompt-add-menu" id="prompt-add-menu" role="menu" aria-label="Add context">
+                                                <div class="menu-section">
+                                                    <button class="menu-item" type="button" role="menuitem">
+                                                        <img class="menu-item-icon" src="assets/menu/attach.svg" alt="" aria-hidden="true">
+                                                        <span class="menu-item-label">Add files or photos</span>
+                                                    </button>
+                                                    <button class="menu-item" type="button" role="menuitem">
+                                                        <img class="menu-item-icon" src="assets/menu/gdrive.png" alt="" aria-hidden="true">
+                                                        <span class="menu-item-label">Google Drive</span>
+                                                    </button>
+                                                </div>
+
+                                                <div class="menu-divider" role="separator"></div>
+
+                                                <div class="menu-section">
+                                                    <button class="menu-item" type="button" role="menuitem">
+                                                        <img class="menu-item-icon" src="assets/menu/note.svg" alt="" aria-hidden="true">
+                                                        <span class="menu-item-label">Skills</span>
+                                                        <img class="menu-item-chevron" src="assets/menu/chevron-right.svg" alt="" aria-hidden="true">
+                                                    </button>
+                                                    <button class="menu-item" type="button" role="menuitem">
+                                                        <img class="menu-item-icon" src="assets/menu/connectors.svg" alt="" aria-hidden="true">
+                                                        <span class="menu-item-label">Connectors</span>
+                                                        <img class="menu-item-chevron" src="assets/menu/chevron-right.svg" alt="" aria-hidden="true">
+                                                    </button>
+                                                </div>
+
+                                                <div class="menu-divider" role="separator"></div>
+
+                                                <div class="menu-section">
+                                                    <button class="menu-item menu-item-toggle" id="deep-analysis-toggle" type="button" role="menuitemcheckbox" aria-checked="true">
+                                                        <img class="menu-item-icon" src="assets/menu/deep-dive.svg" alt="" aria-hidden="true">
+                                                        <span class="menu-item-label">Deep Analysis</span>
+                                                        <img class="menu-item-switch" src="assets/menu/toggle-on.svg" alt="" aria-hidden="true">
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <button class="prompt-model-button" id="model-menu-button" type="button" aria-label="All data models" aria-expanded="false" aria-haspopup="menu">
+                                            <span>All data models</span>
+                                            <span class="chevron-icon" aria-hidden="true"></span>
+                                        </button>
+                                    </div>
+
+                                    <div class="model-menu" id="model-menu" role="menu" aria-label="Data model options" hidden>
+                                        <div class="model-menu-list">
+                                            <button class="model-menu-item" role="menuitem" type="button">Change data model</button>
+                                        </div>
+                                        <div class="model-menu-divider" role="separator"></div>
+                                        <div class="model-menu-list">
+                                            <button class="model-menu-item" role="menuitem" type="button">View data model instructions</button>
+                                            <button class="model-menu-item" role="menuitem" type="button">Preview data</button>
+                                        </div>
+                                    </div>
+
+                                    <div class="prompt-bar-right">
+                                        <button class="prompt-send-button" type="submit" aria-label="Send query" data-tooltip="Send">
+                                            <span class="send-icon" aria-hidden="true"></span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </form>
+
+                        <div class="starter-prompts">
+                            <button class="starter-prompt-chip" id="quick-search-chip" type="button" aria-haspopup="true" aria-expanded="false">
+                                <img class="starter-prompt-icon" src="https://www.figma.com/api/mcp/asset/55980c85-c173-4bc4-b322-315da9b041a2" alt="" aria-hidden="true">
+                                <span>Quick search</span>
+                            </button>
+                            <button class="starter-prompt-chip" id="deep-analysis-chip" type="button" aria-haspopup="true" aria-expanded="false">
+                                <img class="starter-prompt-icon" src="https://www.figma.com/api/mcp/asset/0ac65678-32a0-40b3-b2b7-36c80c793b31" alt="" aria-hidden="true">
+                                <span>Deep analysis</span>
+                            </button>
+                            <button class="starter-prompt-chip" type="button">
+                                <img class="starter-prompt-icon" src="https://www.figma.com/api/mcp/asset/2077b97b-6e5d-4760-aa78-dcd3ed82b2a9" alt="" aria-hidden="true">
+                                <span>Know your data</span>
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <p class="disclaimer-bar">Spotter responses should be reviewed. <a class="disclaimer-bar-learn" href="#">Learn more.</a></p>
+            </main>
+        </div>
+    </div>
+
+    <button class="exploration-fab" id="exploration-button" type="button" aria-label="Open explorations" aria-expanded="false" aria-controls="exploration-popover" data-tooltip="Explore">
+        <span class="explore-icon" aria-hidden="true"></span>
+    </button>
+
+    <aside class="exploration-popover" id="exploration-popover" role="dialog" aria-labelledby="exploration-title" hidden>
+        <div class="exploration-head">
+            <div>
+                <p>Home variations</p>
+                <h2 id="exploration-title">Explorations</h2>
+            </div>
+            <button class="plain-icon-button" id="exploration-close" type="button" aria-label="Close explorations">
+                <span class="close-icon" aria-hidden="true"></span>
+            </button>
+        </div>
+
+        <div class="exploration-section">
+            <p>Style</p>
+            <button class="variation-card is-selected" type="button" data-variation="top-wash" aria-pressed="true">
+                <span class="variation-swatch" aria-hidden="true"></span>
+                <span>
+                    <strong>Top Wash</strong>
+                    <small>Fast radiance from above</small>
+                </span>
+            </button>
+            <button class="variation-card" type="button" data-variation="top-focus" aria-pressed="false">
+                <span class="variation-swatch" aria-hidden="true"></span>
+                <span>
+                    <strong>Top Bloom</strong>
+                    <small>Top wash gathers on focus</small>
+                </span>
+            </button>
+            <button class="variation-card" type="button" data-variation="next" aria-pressed="false">
+                <span class="variation-swatch" aria-hidden="true"></span>
+                <span>
+                    <strong>Neutral Field</strong>
+                    <small>Soft page-wide radiance</small>
+                </span>
+            </button>
+            <button class="variation-card" type="button" data-variation="focus-aura" aria-pressed="false">
+                <span class="variation-swatch" aria-hidden="true"></span>
+                <span>
+                    <strong>Focus Bloom</strong>
+                    <small>Radiance gathers on focus</small>
+                </span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Gradient blur overlay for panels when quick search is expanded -->
+    <div class="panels-blur-overlay" id="panels-blur-overlay" aria-hidden="true"></div>
+
+    <!-- Deep analysis expanded card -->
+    <div class="qs-card" id="da-card" hidden role="dialog" aria-label="Deep analysis suggestions">
+        <div class="qs-header" id="da-header">
+            <div class="qs-header-left">
+                <img class="qs-icon" src="https://www.figma.com/api/mcp/asset/547bcc73-ac57-454e-a19f-fc23d6a5a867" alt="" aria-hidden="true">
+                <span class="qs-label">Deep analysis</span>
+            </div>
+            <button class="qs-close" id="da-close" type="button" aria-label="Close deep analysis">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M12 4L4 12M4 4l8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+            </button>
+        </div>
+        <div class="qs-prompts">
+            <button class="qs-prompt" type="button">Generate report on sales trends last year</button>
+            <button class="qs-prompt" type="button">Product categories that drove maximum growth</button>
+            <button class="qs-prompt" type="button">Find out anomalies in my sales and suggest recommendations</button>
+            <button class="qs-prompt" type="button">Compare my sales to market trends and identify trends</button>
+        </div>
+    </div>
+
+    <!-- Quick search expanded card (must be before scripts so JS can find it) -->
+    <div class="qs-card" id="qs-card" hidden role="dialog" aria-label="Quick search suggestions">
+        <div class="qs-header" id="qs-header">
+            <div class="qs-header-left">
+                <img class="qs-icon" src="https://www.figma.com/api/mcp/asset/55980c85-c173-4bc4-b322-315da9b041a2" alt="" aria-hidden="true">
+                <span class="qs-label">Quick search</span>
+            </div>
+            <button class="qs-close" id="qs-close" type="button" aria-label="Close quick search">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M12 4L4 12M4 4l8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+            </button>
+        </div>
+        <div class="qs-prompts">
+            <button class="qs-prompt" type="button">What was total revenue last month?</button>
+            <button class="qs-prompt" type="button">Show me top 10 products by sales this quarter.</button>
+            <button class="qs-prompt" type="button">How do sales this year compare to last year?</button>
+            <button class="qs-prompt" type="button">Which region had the highest growth last quarter?</button>
+        </div>
+    </div>
+
+    <!-- Spotter Answer title bar – slides down from under topbar after transition -->
+    <div class="answer-title-bar" id="answer-title-bar" aria-hidden="true">
+        <div class="answer-title-bar-left">
+            <span class="answer-title-text" id="answer-title-text"></span>
+        </div>
+        <div class="answer-title-bar-right">
+            <button class="answer-share-btn" type="button">Share</button>
+            <button class="icon-button answer-more-btn" type="button" aria-label="More options">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                    <circle cx="3" cy="8" r="1.5" fill="currentColor"/>
+                    <circle cx="8" cy="8" r="1.5" fill="currentColor"/>
+                    <circle cx="13" cy="8" r="1.5" fill="currentColor"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Spotter Answer left nav – slides in during /Spotterhome → answer transition -->
+    <aside class="spotter-nav" id="spotter-nav" aria-label="Spotter navigation" aria-hidden="true">
+        <div class="spotter-nav-top">
+            <button class="spotter-nav-toggle icon-button" type="button" aria-label="Toggle sidebar">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+                    <rect x="2.5" y="2.5" width="5" height="13" rx="1.5" stroke="currentColor" stroke-width="1.4"/>
+                    <rect x="9.5" y="2.5" width="6" height="13" rx="1.5" stroke="currentColor" stroke-width="1.4"/>
+                </svg>
+            </button>
+            <button class="spotter-new-chat" type="button" aria-label="New chat">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                    <path d="M8.5 2L12 5.5M1.5 12.5l1-3.5L10 1.5 12.5 4l-7.5 7.5-3.5 1z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                New chat
+            </button>
+        </div>
+
+        <div class="spotter-nav-list">
+            <div class="spotter-nav-item spotter-nav-item--active">Spotter (Default)</div>
+            <hr class="spotter-nav-divider">
+
+            <div class="spotter-nav-section">
+                <div class="spotter-nav-section-header">
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+                        <circle cx="9" cy="5.5" r="2.5" stroke="currentColor" stroke-width="1.3"/>
+                        <path d="M3.5 15c0-3.038 2.462-5.5 5.5-5.5s5.5 2.462 5.5 5.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+                    </svg>
+                    <span>Analysts</span>
+                </div>
+                <button class="spotter-nav-item" type="button">Customer prep</button>
+                <button class="spotter-nav-item" type="button">Deal Accelerator</button>
+                <button class="spotter-nav-item spotter-nav-item--link" type="button">
+                    <span>View analyst library</span>
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+                        <path d="M7 5l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+
+            <hr class="spotter-nav-divider">
+
+            <div class="spotter-nav-section">
+                <div class="spotter-nav-section-header spotter-nav-section-header--text-only">
+                    <span>Chats</span>
+                </div>
+                <button class="spotter-nav-item" id="nav-first-chat" type="button">Total sales by monthly</button>
+                <button class="spotter-nav-item" type="button">Regions with lowest sales</button>
+                <button class="spotter-nav-item" type="button">Geographical zones exhibiting diminished sales figures</button>
+                <button class="spotter-nav-item" type="button">Sparsely populated areas with weak economic transactions</button>
+                <button class="spotter-nav-item" type="button">Jacket sales last year</button>
+                <button class="spotter-nav-item" type="button">Remote territories with minimal financial transactions</button>
+                <button class="spotter-nav-item" type="button">Economically challenged districts with poor sales</button>
+                <button class="spotter-nav-item" type="button">Top store sales by state last year</button>
+            </div>
+        </div>
+
+        <div class="spotter-nav-footer">
+            <button class="spotter-settings-btn" type="button">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                    <circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.4"/>
+                    <path d="M8 1v1.5M8 13.5V15M1 8h1.5M13.5 8H15M3.22 3.22l1.06 1.06M11.72 11.72l1.06 1.06M3.22 12.78l1.06-1.06M11.72 4.28l1.06-1.06" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                </svg>
+                Settings
+            </button>
+        </div>
+    </aside>
+
+    <script src="js/radiance-renderer.js?v=20260608-top-focus-1"></script>
+    <script src="js/background.js?v=20260608-top-focus-1"></script>
+    <script src="app.js?v=20260619-clean-urls"></script>
+</body>
+</html>

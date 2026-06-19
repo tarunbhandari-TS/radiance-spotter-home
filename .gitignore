@@ -1,0 +1,12 @@
+﻿node_modules/
+.DS_Store
+Thumbs.db
+*.log
+.env
+.vercel/
+.claude/
+
+# Large archives and duplicate handoff exports (not needed for hosting)
+*.zip
+homepage-radiance-handoff/
+radiance-background-react-handoff/
