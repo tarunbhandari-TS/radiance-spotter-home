@@ -17,8 +17,11 @@
     const explorationPopover = document.getElementById("exploration-popover");
     const explorationClose = document.getElementById("exploration-close");
     const variationButtons = Array.from(document.querySelectorAll("[data-variation]"));
+    const answerFillSelect = document.getElementById("answer-fill-select");
     const DEFAULT_THEME = "dark";
     const DEFAULT_VARIATION = "top-wash";
+    const DEFAULT_ANSWER_FILL = "solid";
+    const ANSWER_FILLS = ["solid", "glass", "gradient"];
     let nextKpiIndex = 0;
 
     const kpiQueue = [
@@ -148,6 +151,15 @@
         applyVariation(target.dataset.variation || DEFAULT_VARIATION);
     }
 
+    // Answer title bar fill (solid / glass / gradient) — driven by the Explorations
+    // dropdown, applied live via a data attribute and remembered across pages.
+    function applyAnswerFill(mode) {
+        const fill = ANSWER_FILLS.includes(mode) ? mode : DEFAULT_ANSWER_FILL;
+        document.documentElement.dataset.answerFill = fill;
+        try { localStorage.setItem("radiance-answer-fill", fill); } catch (e) { /* ignore */ }
+        if (answerFillSelect && answerFillSelect.value !== fill) answerFillSelect.value = fill;
+    }
+
     function addKpi() {
         const [name, cadence, value, trend, direction] = kpiQueue[nextKpiIndex % kpiQueue.length];
         nextKpiIndex += 1;
@@ -209,6 +221,10 @@
 
     setTheme(urlTheme === "dark" || urlTheme === "light" ? urlTheme : DEFAULT_THEME);
     applyVariation(urlVariation || DEFAULT_VARIATION);
+
+    let storedAnswerFill = DEFAULT_ANSWER_FILL;
+    try { storedAnswerFill = localStorage.getItem("radiance-answer-fill") || DEFAULT_ANSWER_FILL; } catch (e) { /* ignore */ }
+    applyAnswerFill(storedAnswerFill);
 
     if (urlQueryFocus === "true" && askInput && window.Background.isFocusVariation()) {
         window.requestAnimationFrame(() => {
@@ -506,6 +522,7 @@
     explorationButton.addEventListener("click", toggleExploration);
     explorationClose.addEventListener("click", closeExploration);
     variationButtons.forEach((button) => button.addEventListener("click", () => setVariation(button)));
+    if (answerFillSelect) answerFillSelect.addEventListener("change", () => applyAnswerFill(answerFillSelect.value));
     document.addEventListener("pointerdown", handleDocumentPointerDown);
     document.addEventListener("click", handleDocumentClick);
     document.addEventListener("keydown", handleKeydown);

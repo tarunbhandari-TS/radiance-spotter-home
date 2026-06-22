@@ -7,7 +7,7 @@
     <meta name="description" content="Standalone Radiance Home surface for ThoughtSpot.">
     <link rel="icon" type="image/png" href="assets/thoughtspot-favicon.png">
     <link rel="apple-touch-icon" href="assets/thoughtspot-apple-touch-icon.png">
-    <link rel="stylesheet" href="styles.css?v=20260619-seamless-nav">
+    <link rel="stylesheet" href="styles.css?v=20260622-answer-fill">
     <link rel="stylesheet" href="css/background.css?v=20260619-bg-fullvp">
 </head>
 <body>
@@ -328,6 +328,15 @@
                 </span>
             </button>
         </div>
+
+        <div class="exploration-section">
+            <p>Answer title bar</p>
+            <select class="answer-fill-select" id="answer-fill-select" aria-label="Answer title bar fill">
+                <option value="solid">Solid</option>
+                <option value="glass">Glass</option>
+                <option value="gradient">Linear gradient</option>
+            </select>
+        </div>
     </aside>
 
     <!-- Gradient blur overlay for panels when quick search is expanded -->
@@ -461,6 +470,6 @@
 
     <script src="js/radiance-renderer.js?v=20260608-top-focus-1"></script>
     <script src="js/background.js?v=20260608-top-focus-1"></script>
-    <script src="app.js?v=20260619-seamless-nav"></script>
+    <script src="app.js?v=20260622-answer-fill"></script>
 </body>
 </html>
