@@ -3937,6 +3937,7 @@ html[data-answer-fill="gradient"] .answer-title-bar::after {
 .reasoning-block-body {
     display: flex;
     flex-direction: column;
+    overflow: hidden;
 }
 
 .reasoning-row {
@@ -4043,6 +4044,31 @@ html[data-answer-fill="gradient"] .answer-title-bar::after {
 .reasoning-block-header.is-done .reasoning-header-chevron {
     animation: none;
     background: var(--secondary-text);
+}
+
+/* Once finished, the header acts as the collapse/expand toggle. */
+.reasoning-block-header.is-done {
+    cursor: pointer;
+    width: fit-content;
+    user-select: none;
+}
+
+.reasoning-block-header.is-done:hover .reasoning-working-text {
+    -webkit-text-fill-color: var(--primary-text);
+    color: var(--primary-text);
+}
+
+.reasoning-block-header.is-done:hover .reasoning-header-chevron {
+    background: var(--primary-text);
+}
+
+/* Chevron points down when collapsed; flips up when expanded. */
+.reasoning-block-header.is-done .reasoning-header-chevron {
+    transition: transform 220ms ease;
+}
+
+.reasoning-block:not(.is-collapsed) .reasoning-block-header.is-done .reasoning-header-chevron {
+    transform: rotate(180deg);
 }
 
 /* ── Conversation scroll container ── */

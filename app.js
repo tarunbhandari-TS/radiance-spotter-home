@@ -676,6 +676,104 @@
         if (daCard && !daCard.hidden && !daCard.contains(e.target) && !daChip.contains(e.target)) closeStarterCard(daChip, daCard);
     });
 
+    // ── Reasoning collapse + scroll helpers ──
+    function smoothScrollTo(el, targetTop, duration) {
+        if (!el) return;
+        duration = duration || 420;
+        const max = el.scrollHeight - el.clientHeight;
+        const target = Math.max(0, Math.min(targetTop, max));
+        const startTop = el.scrollTop;
+        const delta = target - startTop;
+        if (Math.abs(delta) < 1) return;
+        let startTime = null;
+        function step(ts) {
+            if (!startTime) startTime = ts;
+            const t = Math.min((ts - startTime) / duration, 1);
+            el.scrollTop = startTop + delta * (t * (2 - t)); // easeOutQuad
+            if (t < 1) requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+    }
+
+    // Scroll `el` so it sits `topInset` below the scroll container's top edge
+    // (clearing the answer title bar). Uses live rects, so call after layout settles.
+    function scrollElementIntoView(scrollEl, el, topInset) {
+        if (!scrollEl || !el) return;
+        const sRect = scrollEl.getBoundingClientRect();
+        const eRect = el.getBoundingClientRect();
+        const target = (eRect.top - sRect.top + scrollEl.scrollTop) - topInset;
+        smoothScrollTo(scrollEl, target, 420);
+    }
+
+    function answerBarInset() {
+        const bar = document.getElementById('answer-title-bar');
+        return (bar ? bar.getBoundingClientRect().height : 56) + 24;
+    }
+
+    function setReasoningCollapsed(block, collapsed, animate) {
+        const body = block.querySelector('.reasoning-block-body');
+        const header = block.querySelector('.reasoning-block-header');
+        if (!body) return;
+        block.classList.toggle('is-collapsed', collapsed);
+        if (header) header.setAttribute('aria-expanded', String(!collapsed));
+        if (!animate) {
+            body.style.transition = 'none';
+            body.style.maxHeight = collapsed ? '0px' : '';
+            body.style.opacity = collapsed ? '0' : '';
+            requestAnimationFrame(() => { body.style.transition = ''; });
+            return;
+        }
+        body.style.transition = 'max-height 280ms ease, opacity 200ms ease';
+        const full = body.scrollHeight;
+        if (collapsed) {
+            body.style.maxHeight = full + 'px';
+            body.style.opacity = '1';
+            requestAnimationFrame(() => requestAnimationFrame(() => {
+                body.style.maxHeight = '0px';
+                body.style.opacity = '0';
+            }));
+        } else {
+            body.style.maxHeight = '0px';
+            body.style.opacity = '0';
+            requestAnimationFrame(() => requestAnimationFrame(() => {
+                body.style.maxHeight = full + 'px';
+                body.style.opacity = '1';
+            }));
+            body.addEventListener('transitionend', function te(e) {
+                if (e.propertyName !== 'max-height') return;
+                body.style.maxHeight = '';
+                body.removeEventListener('transitionend', te);
+            });
+        }
+    }
+
+    // Wire the "Show work" header so it toggles the steps and re-aims the scroll.
+    function wireReasoningToggle(block, scrollEl) {
+        const header = block.querySelector('.reasoning-block-header');
+        if (!header) return;
+        header.setAttribute('role', 'button');
+        header.setAttribute('tabindex', '0');
+        function toggle() {
+            if (!header.classList.contains('is-done')) return; // only once finished
+            const willExpand = block.classList.contains('is-collapsed');
+            setReasoningCollapsed(block, !willExpand, true);
+            // After the height animation settles, re-aim the scroll.
+            window.setTimeout(() => {
+                if (!scrollEl) return;
+                if (willExpand) {
+                    scrollElementIntoView(scrollEl, block, answerBarInset());
+                } else {
+                    const ans = scrollEl.querySelector('.answer-block');
+                    if (ans) scrollElementIntoView(scrollEl, ans, answerBarInset());
+                }
+            }, 300);
+        }
+        header.addEventListener('click', toggle);
+        header.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
+        });
+    }
+
     // ── Answer block helpers ──
     function buildChartSVG() {
         const data = [
@@ -1095,36 +1193,30 @@
                                     const workingText = block.querySelector('.reasoning-working-text');
                                     if (header) header.classList.add('is-done');
                                     if (workingText) workingText.textContent = 'Show work';
+                                    wireReasoningToggle(block, scrollEl);
 
                                     if (scrollEl) {
                                         const answerEl = buildAnswerBlock();
                                         scrollEl.appendChild(answerEl);
-                                        requestAnimationFrame(() => requestAnimationFrame(() => {
+
+                                        // Answer has loaded → collapse the reasoning steps.
+                                        setReasoningCollapsed(block, true, true);
+
+                                        // Once the collapse settles, reveal the answer and
+                                        // bring it into view below the title bar.
+                                        window.setTimeout(() => {
                                             answerEl.style.opacity = '1';
+                                            const inset = answerBarInset();
                                             const sRect = scrollEl.getBoundingClientRect();
                                             const aRect = answerEl.getBoundingClientRect();
-                                            const targetScrollTop = (aRect.top - sRect.top + scrollEl.scrollTop) - 24;
+                                            const targetScrollTop = (aRect.top - sRect.top + scrollEl.scrollTop) - inset;
                                             const maxScroll = scrollEl.scrollHeight - scrollEl.clientHeight;
                                             if (targetScrollTop > maxScroll) {
                                                 answerEl.style.paddingBottom = `${targetScrollTop - maxScroll}px`;
                                             }
-                                            const startTop = scrollEl.scrollTop;
-                                            const delta = targetScrollTop - startTop;
-                                            const duration = 480;
-                                            let startTime = null;
-                                            function easeOutQuad(t) { return t * (2 - t); }
-                                            function animateScroll(ts) {
-                                                if (!startTime) startTime = ts;
-                                                const elapsed = Math.min((ts - startTime) / duration, 1);
-                                                scrollEl.scrollTop = startTop + delta * easeOutQuad(elapsed);
-                                                if (elapsed < 1) {
-                                                    requestAnimationFrame(animateScroll);
-                                                } else if (askInput) {
-                                                    askInput.focus({ preventScroll: true });
-                                                }
-                                            }
-                                            requestAnimationFrame(animateScroll);
-                                        }));
+                                            smoothScrollTo(scrollEl, targetScrollTop, 480);
+                                            if (askInput) askInput.focus({ preventScroll: true });
+                                        }, 320);
                                     }
                                 }, doneDelay + 100);
                             }, 3250);
