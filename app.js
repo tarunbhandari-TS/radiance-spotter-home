@@ -18,6 +18,8 @@
     const explorationClose = document.getElementById("exploration-close");
     const variationButtons = Array.from(document.querySelectorAll("[data-variation]"));
     const answerFillSelect = document.getElementById("answer-fill-select");
+    const answerFillControls = document.getElementById("answer-fill-controls");
+    const answerTitleBar = document.getElementById("answer-title-bar");
     const DEFAULT_THEME = "dark";
     const DEFAULT_VARIATION = "top-wash";
     const DEFAULT_ANSWER_FILL = "solid";
@@ -158,6 +160,48 @@
         document.documentElement.dataset.answerFill = fill;
         try { localStorage.setItem("radiance-answer-fill", fill); } catch (e) { /* ignore */ }
         if (answerFillSelect && answerFillSelect.value !== fill) answerFillSelect.value = fill;
+        // Alpha/blur/saturate/noise only matter for the frosted fills.
+        if (answerFillControls) answerFillControls.hidden = fill === "solid";
+    }
+
+    // Glass / gradient fine-tuning sliders. Each writes a CSS custom property on
+    // <html> that the .answer-title-bar fill reads, so changes apply at runtime.
+    const ANSWER_SLIDERS = {
+        alpha:    { prop: "--answer-alpha",    unit: "%",  label: (v) => v + "%" },
+        blur:     { prop: "--answer-blur",     unit: "px", label: (v) => v + "px" },
+        saturate: { prop: "--answer-saturate", unit: "",   label: (v) => Number(v).toFixed(2) },
+        noise:    { prop: "--answer-noise",    unit: "",   label: (v) => Number(v).toFixed(2) }
+    };
+
+    function applyAnswerSlider(key) {
+        const cfg = ANSWER_SLIDERS[key];
+        const input = document.getElementById("answer-" + key);
+        const out = document.getElementById("answer-" + key + "-val");
+        if (!cfg || !input) return;
+        // Set on the bar itself — it declares these vars locally as defaults, so an
+        // inline value here overrides them (a value on <html> would be shadowed).
+        if (answerTitleBar) answerTitleBar.style.setProperty(cfg.prop, input.value + cfg.unit);
+        if (out) out.textContent = cfg.label(input.value);
+        persistAnswerSliders();
+    }
+
+    function persistAnswerSliders() {
+        const data = {};
+        Object.keys(ANSWER_SLIDERS).forEach((key) => {
+            const input = document.getElementById("answer-" + key);
+            if (input) data[key] = input.value;
+        });
+        try { localStorage.setItem("radiance-answer-glass", JSON.stringify(data)); } catch (e) { /* ignore */ }
+    }
+
+    function loadAnswerSliders() {
+        let stored = {};
+        try { stored = JSON.parse(localStorage.getItem("radiance-answer-glass") || "{}"); } catch (e) { stored = {}; }
+        Object.keys(ANSWER_SLIDERS).forEach((key) => {
+            const input = document.getElementById("answer-" + key);
+            if (input && stored[key] !== undefined) input.value = stored[key];
+            applyAnswerSlider(key);
+        });
     }
 
     function addKpi() {
@@ -224,6 +268,7 @@
 
     let storedAnswerFill = DEFAULT_ANSWER_FILL;
     try { storedAnswerFill = localStorage.getItem("radiance-answer-fill") || DEFAULT_ANSWER_FILL; } catch (e) { /* ignore */ }
+    loadAnswerSliders();
     applyAnswerFill(storedAnswerFill);
 
     if (urlQueryFocus === "true" && askInput && window.Background.isFocusVariation()) {
@@ -523,6 +568,10 @@
     explorationClose.addEventListener("click", closeExploration);
     variationButtons.forEach((button) => button.addEventListener("click", () => setVariation(button)));
     if (answerFillSelect) answerFillSelect.addEventListener("change", () => applyAnswerFill(answerFillSelect.value));
+    Object.keys(ANSWER_SLIDERS).forEach((key) => {
+        const input = document.getElementById("answer-" + key);
+        if (input) input.addEventListener("input", () => applyAnswerSlider(key));
+    });
     document.addEventListener("pointerdown", handleDocumentPointerDown);
     document.addEventListener("click", handleDocumentClick);
     document.addEventListener("keydown", handleKeydown);

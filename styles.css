@@ -1932,6 +1932,75 @@ html[data-theme="dark"] .exploration-popover {
     box-shadow: 0 0 0 2px var(--brand-soft);
 }
 
+/* Glass / gradient fine-tuning sliders (shown only for those fills). */
+.answer-fill-controls {
+    display: grid;
+    gap: 12px;
+    margin-top: 2px;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--base);
+}
+
+.answer-fill-controls[hidden] {
+    display: none;
+}
+
+.slider-row {
+    display: grid;
+    gap: 6px;
+}
+
+.slider-row > span {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    color: var(--secondary-text);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+}
+
+.slider-row > span em {
+    font-style: normal;
+    font-variant-numeric: tabular-nums;
+    color: var(--primary-text);
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+.slider-row input[type="range"] {
+    width: 100%;
+    height: 4px;
+    margin: 4px 0;
+    border-radius: 999px;
+    background: var(--border);
+    -webkit-appearance: none;
+    appearance: none;
+    cursor: pointer;
+}
+
+.slider-row input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid var(--base);
+    background: var(--brand);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.slider-row input[type="range"]::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid var(--base);
+    background: var(--brand);
+}
+
 .variation-card {
     display: grid;
     grid-template-columns: 38px minmax(0, 1fr);
@@ -3516,17 +3585,22 @@ html[data-theme="dark"] .model-menu {
     background: var(--on-base);
     border-bottom: 1px solid var(--border);
     transform: translateY(-100%);
+    /* Glass/gradient knobs — live-tweaked by the Explorations sliders. */
+    --answer-alpha: 22%;
+    --answer-blur: 18px;
+    --answer-saturate: 1.4;
+    --answer-noise: 0;
 }
 
 /* ── Answer title bar fill (chosen in the Explorations panel) ── */
 /* Solid is the default (var(--on-base) above). */
 
 /* Glass: mostly transparent so the scrolling answer content reads through the
-   frosted blur behind the bar. */
+   frosted blur behind the bar. Alpha / blur / saturate are slider-driven. */
 html[data-answer-fill="glass"] .answer-title-bar {
-    background: color-mix(in srgb, var(--on-base) 22%, transparent);
-    -webkit-backdrop-filter: blur(18px) saturate(1.4);
-    backdrop-filter: blur(18px) saturate(1.4);
+    background: color-mix(in srgb, var(--on-base) var(--answer-alpha), transparent);
+    -webkit-backdrop-filter: blur(var(--answer-blur)) saturate(var(--answer-saturate));
+    backdrop-filter: blur(var(--answer-blur)) saturate(var(--answer-saturate));
 }
 
 /* Linear gradient: solid at the top easing into transparent frosty glass at the
@@ -3536,10 +3610,29 @@ html[data-answer-fill="gradient"] .answer-title-bar {
         to bottom,
         var(--on-base) 0%,
         var(--on-base) 38%,
-        color-mix(in srgb, var(--on-base) 18%, transparent) 100%
+        color-mix(in srgb, var(--on-base) var(--answer-alpha), transparent) 100%
     );
-    -webkit-backdrop-filter: blur(18px) saturate(1.4);
-    backdrop-filter: blur(18px) saturate(1.4);
+    -webkit-backdrop-filter: blur(var(--answer-blur)) saturate(var(--answer-saturate));
+    backdrop-filter: blur(var(--answer-blur)) saturate(var(--answer-saturate));
+}
+
+/* Slider-driven film grain over the glass / gradient fill (like the page bg). */
+html[data-answer-fill="glass"] .answer-title-bar::after,
+html[data-answer-fill="gradient"] .answer-title-bar::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: var(--answer-noise);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='an'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23an)'/%3E%3C/svg%3E");
+    mix-blend-mode: overlay;
+}
+
+.answer-title-bar-left,
+.answer-title-bar-right {
+    position: relative;
+    z-index: 1;
 }
 
 .answer-title-bar-left {
