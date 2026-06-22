@@ -7,8 +7,8 @@
     <meta name="description" content="Standalone Radiance Spotter surface for ThoughtSpot.">
     <link rel="icon" type="image/png" href="assets/thoughtspot-favicon.png">
     <link rel="apple-touch-icon" href="assets/thoughtspot-apple-touch-icon.png">
-    <link rel="stylesheet" href="styles.css?v=20260622-ripple-fix">
-    <link rel="stylesheet" href="css/background.css?v=20260619-bg-fullvp">
+    <link rel="stylesheet" href="styles.css?v=20260622-clean">
+    <link rel="stylesheet" href="css/background.css?v=20260622-clean">
 </head>
 <body class="spotter-page">
     <div class="app-shell">
@@ -112,7 +112,6 @@
             <main class="home-main" id="main-content">
                 <section class="spotter-hero" aria-labelledby="hero-title">
                     <div id="background-root" aria-hidden="true"></div>
-                    <div class="ripple-bg" id="ripple-bg" aria-hidden="true"></div>
 
                     <div class="home-stack">
                         <div class="spotter-copy">
@@ -334,7 +333,7 @@
             <p>Answer title bar</p>
             <select class="answer-fill-select" id="answer-fill-select" aria-label="Answer title bar fill">
                 <option value="solid">Solid</option>
-                <option value="glass">Glass</option>
+                <option value="glass" selected>Glass</option>
                 <option value="gradient">Linear gradient</option>
             </select>
 
@@ -358,20 +357,6 @@
             </div>
         </div>
 
-        <div class="exploration-section">
-            <p>Submit flow</p>
-            <div class="flow-switch" id="flow-switch" role="radiogroup" aria-label="Submit flow option">
-                <button class="flow-option is-selected" type="button" data-flow="option1" role="radio" aria-checked="true">Option 1</button>
-                <button class="flow-option" type="button" data-flow="option2" role="radio" aria-checked="false">Option 2</button>
-            </div>
-            <p class="flow-hint">Option 2 shows a ripple background while the answer loads.</p>
-            <div class="answer-fill-controls" id="ripple-speed-controls">
-                <label class="slider-row">
-                    <span>Ripple speed <em id="ripple-speed-val">0.50×</em></span>
-                    <input type="range" id="ripple-speed" min="0.1" max="2" step="0.05" value="0.5" aria-label="Ripple speed">
-                </label>
-            </div>
-        </div>
     </aside>
 
     <!-- Gradient blur overlay for panels when quick search is expanded -->
@@ -505,7 +490,6 @@
 
     <script src="js/radiance-renderer.js?v=20260608-top-focus-1"></script>
     <script src="js/background.js?v=20260608-top-focus-1"></script>
-    <script src="js/ripple-background.js?v=20260622-ripple-fix"></script>
-    <script src="app.js?v=20260622-ripple-fix"></script>
+    <script src="app.js?v=20260622-clean"></script>
 </body>
 </html>

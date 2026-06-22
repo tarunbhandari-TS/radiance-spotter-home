@@ -20,15 +20,10 @@
     const answerFillSelect = document.getElementById("answer-fill-select");
     const answerFillControls = document.getElementById("answer-fill-controls");
     const answerTitleBar = document.getElementById("answer-title-bar");
-    const flowOptionButtons = Array.from(document.querySelectorAll(".flow-option"));
-    const rippleBg = document.getElementById("ripple-bg");
     const DEFAULT_THEME = "dark";
     const DEFAULT_VARIATION = "top-wash";
-    const DEFAULT_ANSWER_FILL = "solid";
+    const DEFAULT_ANSWER_FILL = "glass";
     const ANSWER_FILLS = ["solid", "glass", "gradient"];
-    const SUBMIT_FLOWS = ["option1", "option2"];
-    const DEFAULT_SUBMIT_FLOW = "option1";
-    let submitFlow = DEFAULT_SUBMIT_FLOW;
     let nextKpiIndex = 0;
 
     const kpiQueue = [
@@ -209,36 +204,10 @@
         });
     }
 
-    // Submit flow: option1 = keep radiance background, option2 = ripple loading bg.
-    function applySubmitFlow(flow) {
-        submitFlow = SUBMIT_FLOWS.includes(flow) ? flow : DEFAULT_SUBMIT_FLOW;
-        try { localStorage.setItem("radiance-submit-flow", submitFlow); } catch (e) { /* ignore */ }
-        flowOptionButtons.forEach((btn) => {
-            const isSel = btn.dataset.flow === submitFlow;
-            btn.classList.toggle("is-selected", isSel);
-            btn.setAttribute("aria-checked", String(isSel));
-        });
-    }
-
-    // Option-2 ripple loading background lifecycle.
-    let rippleHandle = null;
-    function activateRipple(cx, cy) {
-        if (!rippleBg || !window.RippleBackground) return;
-        const speedSlider = document.getElementById("ripple-speed");
-        const speed = speedSlider ? parseFloat(speedSlider.value) : 0.5;
-        rippleBg.classList.add("is-active");
-        rippleHandle = window.RippleBackground.start(rippleBg, { cx, cy, speed });
-        requestAnimationFrame(() => requestAnimationFrame(() => {
-            rippleBg.classList.add("is-visible");
-        }));
-    }
-    function deactivateRipple() {
-        if (!rippleBg) return;
-        rippleBg.classList.remove("is-visible"); // 150ms opacity fade-out (CSS)
-        window.setTimeout(() => {
-            rippleBg.classList.remove("is-active");
-            if (rippleHandle) { rippleHandle.stop(); rippleHandle = null; }
-        }, 160);
+    // Background pan — slides #background-root up when answer loads, resets on navigation.
+    const bgRoot = document.getElementById("background-root");
+    function panBackground(offsetY) {
+        if (bgRoot) bgRoot.style.transform = offsetY ? `translateY(${offsetY}px)` : "";
     }
 
     function addKpi() {
@@ -308,9 +277,8 @@
     loadAnswerSliders();
     applyAnswerFill(storedAnswerFill);
 
-    let storedFlow = DEFAULT_SUBMIT_FLOW;
-    try { storedFlow = localStorage.getItem("radiance-submit-flow") || DEFAULT_SUBMIT_FLOW; } catch (e) { /* ignore */ }
-    applySubmitFlow(storedFlow);
+    // Entrance animation on initial page load.
+    window.requestAnimationFrame(() => playEntranceAnimation());
 
     if (urlQueryFocus === "true" && askInput && window.Background.isFocusVariation()) {
         window.requestAnimationFrame(() => {
@@ -526,14 +494,43 @@
         });
     }
 
+    // Entrance animation: modules slide up from 50px below into position.
+    function playEntranceAnimation() {
+        const targets = [
+            document.querySelector(".home-stack"),
+            document.querySelector(".home-panels"),
+        ].filter(Boolean);
+        targets.forEach((el) => {
+            el.style.transition = "none";
+            el.style.opacity = "0";
+            el.style.transform = "translateY(50px)";
+        });
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+            targets.forEach((el) => {
+                el.style.transition = "opacity 480ms cubic-bezier(0.22, 1, 0.36, 1), transform 480ms cubic-bezier(0.22, 1, 0.36, 1)";
+                el.style.opacity = "";
+                el.style.transform = "";
+            });
+        }));
+        targets.forEach((el) => {
+            el.addEventListener("transitionend", function cleanup(e) {
+                if (e.propertyName !== "transform") return;
+                el.style.transition = "";
+                el.removeEventListener("transitionend", cleanup);
+            });
+        });
+    }
+
     function goToSpotterLanding(push) {
         if (document.body.classList.contains("spotter-page")) return;
+        panBackground(0);
         const panels = document.querySelector(".home-panels");
         if (panels) { panels.style.transition = "opacity 140ms ease"; panels.style.opacity = "0"; }
         window.setTimeout(() => {
             flipStack(() => document.body.classList.add("spotter-page"));
             if (panels) { panels.style.transition = ""; panels.style.opacity = ""; }
             positionDisclaimer();
+            playEntranceAnimation();
         }, 140);
         document.title = "Spotter - Radiance";
         setNavActiveByLabel("Spotter");
@@ -542,6 +539,7 @@
 
     function goToHome(push) {
         if (!document.body.classList.contains("spotter-page")) return;
+        panBackground(0);
         const panels = document.querySelector(".home-panels");
         flipStack(() => {
             document.body.classList.remove("spotter-page");
@@ -554,6 +552,7 @@
             }));
         }
         positionDisclaimer();
+        playEntranceAnimation();
         document.title = "Home - Radiance";
         setNavActiveByLabel("Home");
         if (push !== false) history.pushState({ page: "home" }, "", basePath() + "Home");
@@ -613,16 +612,6 @@
         const input = document.getElementById("answer-" + key);
         if (input) input.addEventListener("input", () => applyAnswerSlider(key));
     });
-    flowOptionButtons.forEach((btn) => btn.addEventListener("click", () => applySubmitFlow(btn.dataset.flow)));
-    const rippleSpeedSlider = document.getElementById("ripple-speed");
-    const rippleSpeedVal = document.getElementById("ripple-speed-val");
-    if (rippleSpeedSlider) {
-        rippleSpeedSlider.addEventListener("input", () => {
-            const v = parseFloat(rippleSpeedSlider.value);
-            if (rippleSpeedVal) rippleSpeedVal.textContent = v.toFixed(2) + "×";
-            if (rippleHandle) rippleHandle.setSpeed(v);
-        });
-    }
     document.addEventListener("pointerdown", handleDocumentPointerDown);
     document.addEventListener("click", handleDocumentClick);
     document.addEventListener("keydown", handleKeydown);
@@ -934,17 +923,6 @@
         const targetTop    = targetBottom - formRect.height;
         const deltaY       = targetTop - formRect.top;
 
-        // Option 2: ripple originates from the prompt bar's final resting centre.
-        // #ripple-bg is now position:absolute inside .spotter-hero, so coords are
-        // relative to that element's top-left corner.
-        if (submitFlow === "option2") {
-            const heroEl = document.querySelector('.spotter-hero');
-            const heroTop = heroEl ? heroEl.getBoundingClientRect().top : 0;
-            const rippleCx = formRect.left + formRect.width / 2;
-            const rippleCy = targetTop + formRect.height / 2 - heroTop;
-            activateRipple(rippleCx, rippleCy);
-        }
-
         // No horizontal movement — straight down only
         const deltaX = 0;
 
@@ -1052,15 +1030,14 @@
                         const barHeight   = barRect ? barRect.height : 56;
                         const rightOffset = Math.round(window.innerWidth - formRect.right);
 
-                        // Scroll container holds bubble + reasoning + answer. It starts at
-                        // the answer bar's top (not its bottom) so content scrolls *behind*
-                        // the bar — letting the glass / gradient fill reveal it. Top padding
-                        // keeps the first content clear of the bar on initial render.
+                        // Scroll container starts flush below the answer bar.
+                        // A 16px fade mask on the top edge softens the entry of content.
                         scrollEl = document.createElement('div');
                         scrollEl.className = 'conversation-scroll';
+                        const barBottom = barTop + barHeight;
                         Object.assign(scrollEl.style, {
                             position:      'fixed',
-                            top:           `${barTop}px`,
+                            top:           `${barBottom}px`,
                             left:          '0',
                             right:         '0',
                             bottom:        `${window.innerHeight - pRect.top + 12}px`,
@@ -1068,10 +1045,12 @@
                             overflowX:     'hidden',
                             zIndex:        '20',
                             boxSizing:     'border-box',
-                            paddingTop:    `${barHeight + 24}px`,
+                            paddingTop:    '24px',
                             paddingBottom: '0',
                             paddingLeft:   `${formRect.left}px`,
                             paddingRight:  `${rightOffset}px`,
+                            WebkitMaskImage: 'linear-gradient(to bottom, transparent 0px, black 16px)',
+                            maskImage:       'linear-gradient(to bottom, transparent 0px, black 16px)',
                         });
                         document.body.appendChild(scrollEl);
 
@@ -1269,8 +1248,8 @@
                                         // bring it into view below the title bar.
                                         window.setTimeout(() => {
                                             answerEl.style.opacity = '1';
-                                            // Answer chart has loaded → fade the ripple bg out (150ms).
-                                            deactivateRipple();
+                                            // Pan the radiance background up once the answer lands.
+                                            panBackground(-150);
                                             const inset = answerBarInset();
                                             const sRect = scrollEl.getBoundingClientRect();
                                             const aRect = answerEl.getBoundingClientRect();
