@@ -1249,7 +1249,7 @@
                                         window.setTimeout(() => {
                                             answerEl.style.opacity = '1';
                                             // Pan the radiance background up once the answer lands.
-                                            panBackground(-150);
+                                            panBackground(-75);
                                             const inset = answerBarInset();
                                             const sRect = scrollEl.getBoundingClientRect();
                                             const aRect = answerEl.getBoundingClientRect();
