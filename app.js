@@ -20,10 +20,15 @@
     const answerFillSelect = document.getElementById("answer-fill-select");
     const answerFillControls = document.getElementById("answer-fill-controls");
     const answerTitleBar = document.getElementById("answer-title-bar");
+    const flowOptionButtons = Array.from(document.querySelectorAll(".flow-option"));
+    const rippleBg = document.getElementById("ripple-bg");
     const DEFAULT_THEME = "dark";
     const DEFAULT_VARIATION = "top-wash";
     const DEFAULT_ANSWER_FILL = "solid";
     const ANSWER_FILLS = ["solid", "glass", "gradient"];
+    const SUBMIT_FLOWS = ["option1", "option2"];
+    const DEFAULT_SUBMIT_FLOW = "option1";
+    let submitFlow = DEFAULT_SUBMIT_FLOW;
     let nextKpiIndex = 0;
 
     const kpiQueue = [
@@ -204,6 +209,38 @@
         });
     }
 
+    // Submit flow: option1 = keep radiance background, option2 = ripple loading bg.
+    function applySubmitFlow(flow) {
+        submitFlow = SUBMIT_FLOWS.includes(flow) ? flow : DEFAULT_SUBMIT_FLOW;
+        try { localStorage.setItem("radiance-submit-flow", submitFlow); } catch (e) { /* ignore */ }
+        flowOptionButtons.forEach((btn) => {
+            const isSel = btn.dataset.flow === submitFlow;
+            btn.classList.toggle("is-selected", isSel);
+            btn.setAttribute("aria-checked", String(isSel));
+        });
+    }
+
+    // Option-2 ripple loading background lifecycle.
+    let rippleHandle = null;
+    function activateRipple(cx, cy) {
+        if (!rippleBg || !window.RippleBackground) return;
+        const speedSlider = document.getElementById("ripple-speed");
+        const speed = speedSlider ? parseFloat(speedSlider.value) : 0.5;
+        rippleBg.classList.add("is-active");
+        rippleHandle = window.RippleBackground.start(rippleBg, { cx, cy, speed });
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+            rippleBg.classList.add("is-visible");
+        }));
+    }
+    function deactivateRipple() {
+        if (!rippleBg) return;
+        rippleBg.classList.remove("is-visible"); // 150ms opacity fade-out (CSS)
+        window.setTimeout(() => {
+            rippleBg.classList.remove("is-active");
+            if (rippleHandle) { rippleHandle.stop(); rippleHandle = null; }
+        }, 160);
+    }
+
     function addKpi() {
         const [name, cadence, value, trend, direction] = kpiQueue[nextKpiIndex % kpiQueue.length];
         nextKpiIndex += 1;
@@ -270,6 +307,10 @@
     try { storedAnswerFill = localStorage.getItem("radiance-answer-fill") || DEFAULT_ANSWER_FILL; } catch (e) { /* ignore */ }
     loadAnswerSliders();
     applyAnswerFill(storedAnswerFill);
+
+    let storedFlow = DEFAULT_SUBMIT_FLOW;
+    try { storedFlow = localStorage.getItem("radiance-submit-flow") || DEFAULT_SUBMIT_FLOW; } catch (e) { /* ignore */ }
+    applySubmitFlow(storedFlow);
 
     if (urlQueryFocus === "true" && askInput && window.Background.isFocusVariation()) {
         window.requestAnimationFrame(() => {
@@ -572,6 +613,16 @@
         const input = document.getElementById("answer-" + key);
         if (input) input.addEventListener("input", () => applyAnswerSlider(key));
     });
+    flowOptionButtons.forEach((btn) => btn.addEventListener("click", () => applySubmitFlow(btn.dataset.flow)));
+    const rippleSpeedSlider = document.getElementById("ripple-speed");
+    const rippleSpeedVal = document.getElementById("ripple-speed-val");
+    if (rippleSpeedSlider) {
+        rippleSpeedSlider.addEventListener("input", () => {
+            const v = parseFloat(rippleSpeedSlider.value);
+            if (rippleSpeedVal) rippleSpeedVal.textContent = v.toFixed(2) + "×";
+            if (rippleHandle) rippleHandle.setSpeed(v);
+        });
+    }
     document.addEventListener("pointerdown", handleDocumentPointerDown);
     document.addEventListener("click", handleDocumentClick);
     document.addEventListener("keydown", handleKeydown);
@@ -857,6 +908,7 @@
     function runSpotterTransition() {
         if (transitionFired) return;
         transitionFired = true;
+
         const queryText = askInput ? askInput.value.trim() : '';
         const DURATION = 450;
         const easing = `${DURATION}ms cubic-bezier(0.25, 0.46, 0.45, 0.94)`; // ease-out
@@ -881,6 +933,17 @@
         const targetBottom = window.innerHeight - discH - discOffset - 8;
         const targetTop    = targetBottom - formRect.height;
         const deltaY       = targetTop - formRect.top;
+
+        // Option 2: ripple originates from the prompt bar's final resting centre.
+        // #ripple-bg is now position:absolute inside .spotter-hero, so coords are
+        // relative to that element's top-left corner.
+        if (submitFlow === "option2") {
+            const heroEl = document.querySelector('.spotter-hero');
+            const heroTop = heroEl ? heroEl.getBoundingClientRect().top : 0;
+            const rippleCx = formRect.left + formRect.width / 2;
+            const rippleCy = targetTop + formRect.height / 2 - heroTop;
+            activateRipple(rippleCx, rippleCy);
+        }
 
         // No horizontal movement — straight down only
         const deltaX = 0;
@@ -1206,6 +1269,8 @@
                                         // bring it into view below the title bar.
                                         window.setTimeout(() => {
                                             answerEl.style.opacity = '1';
+                                            // Answer chart has loaded → fade the ripple bg out (150ms).
+                                            deactivateRipple();
                                             const inset = answerBarInset();
                                             const sRect = scrollEl.getBoundingClientRect();
                                             const aRect = answerEl.getBoundingClientRect();

@@ -1903,6 +1903,69 @@ html[data-theme="dark"] .exploration-popover {
     padding-top: 14px;
 }
 
+/* Submit-flow switch (Option 1 radiance / Option 2 ripple). */
+.flow-switch {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+    padding: 4px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--base);
+}
+
+.flow-option {
+    height: 32px;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    color: var(--secondary-text);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 140ms ease, color 140ms ease;
+}
+
+.flow-option:hover {
+    color: var(--primary-text);
+}
+
+.flow-option.is-selected {
+    background: var(--brand);
+    color: #fff;
+}
+
+.exploration-section .flow-hint {
+    margin: 0;
+    color: var(--secondary-text);
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 15px;
+    letter-spacing: 0;
+    text-transform: none;
+}
+
+/* ── Option-2 ripple loading background ── */
+.ripple-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: none;
+    opacity: 0;
+    pointer-events: none;
+    background: transparent;
+    transition: opacity 150ms ease;
+}
+
+.ripple-bg.is-active {
+    display: block;
+}
+
+.ripple-bg.is-visible {
+    opacity: 1;
+}
+
 .answer-fill-select {
     width: 100%;
     height: 38px;

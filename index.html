@@ -7,7 +7,7 @@
     <meta name="description" content="Standalone Radiance Home surface for ThoughtSpot.">
     <link rel="icon" type="image/png" href="assets/thoughtspot-favicon.png">
     <link rel="apple-touch-icon" href="assets/thoughtspot-apple-touch-icon.png">
-    <link rel="stylesheet" href="styles.css?v=20260622-reasoning-collapse">
+    <link rel="stylesheet" href="styles.css?v=20260622-ripple-fix">
     <link rel="stylesheet" href="css/background.css?v=20260619-bg-fullvp">
 </head>
 <body>
@@ -112,6 +112,7 @@
             <main class="home-main" id="main-content">
                 <section class="spotter-hero" aria-labelledby="hero-title">
                     <div id="background-root" aria-hidden="true"></div>
+                    <div class="ripple-bg" id="ripple-bg" aria-hidden="true"></div>
 
                     <div class="home-stack">
                         <div class="spotter-copy">
@@ -356,6 +357,15 @@
                 </label>
             </div>
         </div>
+
+        <div class="exploration-section">
+            <p>Submit flow</p>
+            <div class="flow-switch" id="flow-switch" role="radiogroup" aria-label="Submit flow option">
+                <button class="flow-option is-selected" type="button" data-flow="option1" role="radio" aria-checked="true">Option 1</button>
+                <button class="flow-option" type="button" data-flow="option2" role="radio" aria-checked="false">Option 2</button>
+            </div>
+            <p class="flow-hint">Option 2 shows a ripple background while the answer loads.</p>
+        </div>
     </aside>
 
     <!-- Gradient blur overlay for panels when quick search is expanded -->
@@ -489,6 +499,7 @@
 
     <script src="js/radiance-renderer.js?v=20260608-top-focus-1"></script>
     <script src="js/background.js?v=20260608-top-focus-1"></script>
-    <script src="app.js?v=20260622-reasoning-collapse"></script>
+    <script src="js/ripple-background.js?v=20260622-ripple-fix"></script>
+    <script src="app.js?v=20260622-ripple-fix"></script>
 </body>
 </html>
