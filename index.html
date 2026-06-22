@@ -339,21 +339,29 @@
 
             <div class="answer-fill-controls" id="answer-fill-controls" hidden>
                 <label class="slider-row">
-                    <span>Alpha <em id="answer-alpha-val">22%</em></span>
-                    <input type="range" id="answer-alpha" min="0" max="100" step="1" value="22" aria-label="Answer bar alpha">
+                    <span>Alpha <em id="answer-alpha-val">21%</em></span>
+                    <input type="range" id="answer-alpha" min="0" max="100" step="1" value="21" aria-label="Answer bar alpha">
                 </label>
                 <label class="slider-row">
-                    <span>Blur <em id="answer-blur-val">18px</em></span>
-                    <input type="range" id="answer-blur" min="0" max="40" step="1" value="18" aria-label="Answer bar blur">
+                    <span>Blur <em id="answer-blur-val">10px</em></span>
+                    <input type="range" id="answer-blur" min="0" max="40" step="1" value="10" aria-label="Answer bar blur">
                 </label>
                 <label class="slider-row">
                     <span>Saturate <em id="answer-saturate-val">1.40</em></span>
                     <input type="range" id="answer-saturate" min="0" max="3" step="0.05" value="1.4" aria-label="Answer bar saturation">
                 </label>
                 <label class="slider-row">
-                    <span>Noise <em id="answer-noise-val">0.00</em></span>
-                    <input type="range" id="answer-noise" min="0" max="1" step="0.01" value="0" aria-label="Answer bar noise">
+                    <span>Noise <em id="answer-noise-val">0.07</em></span>
+                    <input type="range" id="answer-noise" min="0" max="1" step="0.01" value="0.07" aria-label="Answer bar noise">
                 </label>
+            </div>
+        </div>
+
+        <div class="exploration-section">
+            <p>Submit flow</p>
+            <div class="flow-switch" id="flow-switch" role="radiogroup" aria-label="Submit flow option">
+                <button class="flow-option is-selected" type="button" data-flow="option1" role="radio" aria-checked="true">Option 1</button>
+                <button class="flow-option" type="button" data-flow="option2" role="radio" aria-checked="false">Option 2</button>
             </div>
         </div>
 

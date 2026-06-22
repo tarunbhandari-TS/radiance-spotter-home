@@ -20,10 +20,14 @@
     const answerFillSelect = document.getElementById("answer-fill-select");
     const answerFillControls = document.getElementById("answer-fill-controls");
     const answerTitleBar = document.getElementById("answer-title-bar");
+    const flowOptionButtons = Array.from(document.querySelectorAll(".flow-option"));
     const DEFAULT_THEME = "dark";
     const DEFAULT_VARIATION = "top-wash";
     const DEFAULT_ANSWER_FILL = "glass";
     const ANSWER_FILLS = ["solid", "glass", "gradient"];
+    const SUBMIT_FLOWS = ["option1", "option2"];
+    const DEFAULT_SUBMIT_FLOW = "option1";
+    let submitFlow = DEFAULT_SUBMIT_FLOW;
     let nextKpiIndex = 0;
 
     const kpiQueue = [
@@ -204,6 +208,17 @@
         });
     }
 
+    // Submit flow: option1 = radiance only, option2 = masked scroll container.
+    function applySubmitFlow(flow) {
+        submitFlow = SUBMIT_FLOWS.includes(flow) ? flow : DEFAULT_SUBMIT_FLOW;
+        try { localStorage.setItem("radiance-submit-flow", submitFlow); } catch (e) { /* ignore */ }
+        flowOptionButtons.forEach((btn) => {
+            const isSel = btn.dataset.flow === submitFlow;
+            btn.classList.toggle("is-selected", isSel);
+            btn.setAttribute("aria-checked", String(isSel));
+        });
+    }
+
     // Background pan — slides #background-root up when answer loads, resets on navigation.
     const bgRoot = document.getElementById("background-root");
     function panBackground(offsetY) {
@@ -276,6 +291,10 @@
     try { storedAnswerFill = localStorage.getItem("radiance-answer-fill") || DEFAULT_ANSWER_FILL; } catch (e) { /* ignore */ }
     loadAnswerSliders();
     applyAnswerFill(storedAnswerFill);
+
+    let storedFlow = DEFAULT_SUBMIT_FLOW;
+    try { storedFlow = localStorage.getItem("radiance-submit-flow") || DEFAULT_SUBMIT_FLOW; } catch (e) { /* ignore */ }
+    applySubmitFlow(storedFlow);
 
     // Entrance animation on initial page load.
     window.requestAnimationFrame(() => playEntranceAnimation());
@@ -612,6 +631,7 @@
         const input = document.getElementById("answer-" + key);
         if (input) input.addEventListener("input", () => applyAnswerSlider(key));
     });
+    flowOptionButtons.forEach((btn) => btn.addEventListener("click", () => applySubmitFlow(btn.dataset.flow)));
     document.addEventListener("pointerdown", handleDocumentPointerDown);
     document.addEventListener("click", handleDocumentClick);
     document.addEventListener("keydown", handleKeydown);
@@ -1049,8 +1069,10 @@
                             paddingBottom: '0',
                             paddingLeft:   `${formRect.left}px`,
                             paddingRight:  `${rightOffset}px`,
-                            WebkitMaskImage: 'linear-gradient(to bottom, transparent 0px, black 16px)',
-                            maskImage:       'linear-gradient(to bottom, transparent 0px, black 16px)',
+                            ...(submitFlow === 'option2' ? {
+                                WebkitMaskImage: 'linear-gradient(to bottom, transparent 0px, black 24px)',
+                                maskImage:       'linear-gradient(to bottom, transparent 0px, black 24px)',
+                            } : {}),
                         });
                         document.body.appendChild(scrollEl);
 
