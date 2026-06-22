@@ -4120,7 +4120,7 @@ html[data-answer-fill="gradient"] .answer-title-bar::after {
 
 /* ── Answer block ── */
 .answer-block {
-    margin-top: 36px;
+    margin-top: 12px;
     display: flex;
     flex-direction: column;
     gap: 20px;

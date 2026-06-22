@@ -1050,14 +1050,16 @@
                         const barHeight   = barRect ? barRect.height : 56;
                         const rightOffset = Math.round(window.innerWidth - formRect.right);
 
-                        // Scroll container starts flush below the answer bar.
-                        // A 16px fade mask on the top edge softens the entry of content.
+                        // Option 1: container starts at the bar's top edge so content
+                        // scrolls behind the glass — the blur/frost reveals it.
+                        // Option 2: starts flush below the bar with a 24px fade mask.
                         scrollEl = document.createElement('div');
                         scrollEl.className = 'conversation-scroll';
                         const barBottom = barTop + barHeight;
+                        const isOpt1 = submitFlow !== 'option2';
                         Object.assign(scrollEl.style, {
                             position:      'fixed',
-                            top:           `${barBottom}px`,
+                            top:           isOpt1 ? `${barTop}px` : `${barBottom}px`,
                             left:          '0',
                             right:         '0',
                             bottom:        `${window.innerHeight - pRect.top + 12}px`,
@@ -1065,11 +1067,11 @@
                             overflowX:     'hidden',
                             zIndex:        '20',
                             boxSizing:     'border-box',
-                            paddingTop:    '24px',
+                            paddingTop:    isOpt1 ? `${barHeight + 24}px` : '24px',
                             paddingBottom: '0',
                             paddingLeft:   `${formRect.left}px`,
                             paddingRight:  `${rightOffset}px`,
-                            ...(submitFlow === 'option2' ? {
+                            ...(!isOpt1 ? {
                                 WebkitMaskImage: 'linear-gradient(to bottom, transparent 0px, black 24px)',
                                 maskImage:       'linear-gradient(to bottom, transparent 0px, black 24px)',
                             } : {}),
@@ -1274,8 +1276,9 @@
                                             panBackground(-75);
                                             const inset = answerBarInset();
                                             const sRect = scrollEl.getBoundingClientRect();
-                                            const aRect = answerEl.getBoundingClientRect();
-                                            const targetScrollTop = (aRect.top - sRect.top + scrollEl.scrollTop) - inset;
+                                            // Scroll so 'Show work' sits 24px below the answer title bar.
+                                            const blockRect = block.getBoundingClientRect();
+                                            const targetScrollTop = (blockRect.top - sRect.top + scrollEl.scrollTop) - inset - 24;
                                             const maxScroll = scrollEl.scrollHeight - scrollEl.clientHeight;
                                             if (targetScrollTop > maxScroll) {
                                                 answerEl.style.paddingBottom = `${targetScrollTop - maxScroll}px`;
