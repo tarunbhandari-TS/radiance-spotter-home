@@ -837,23 +837,28 @@
 
                     if (promptBarEl) {
                         const pRect       = promptBarEl.getBoundingClientRect();
-                        const barBottom   = answerBarEl ? answerBarEl.getBoundingClientRect().bottom : 116;
+                        const barRect     = answerBarEl ? answerBarEl.getBoundingClientRect() : null;
+                        const barTop      = barRect ? barRect.top : 60;
+                        const barHeight   = barRect ? barRect.height : 56;
                         const rightOffset = Math.round(window.innerWidth - formRect.right);
 
-                        // Scroll container holds bubble + reasoning + answer
+                        // Scroll container holds bubble + reasoning + answer. It starts at
+                        // the answer bar's top (not its bottom) so content scrolls *behind*
+                        // the bar — letting the glass / gradient fill reveal it. Top padding
+                        // keeps the first content clear of the bar on initial render.
                         scrollEl = document.createElement('div');
                         scrollEl.className = 'conversation-scroll';
                         Object.assign(scrollEl.style, {
                             position:      'fixed',
-                            top:           `${barBottom}px`,
+                            top:           `${barTop}px`,
                             left:          '0',
                             right:         '0',
                             bottom:        `${window.innerHeight - pRect.top + 12}px`,
                             overflowY:     'auto',
                             overflowX:     'hidden',
-                            zIndex:        '100',
+                            zIndex:        '20',
                             boxSizing:     'border-box',
-                            paddingTop:    '24px',
+                            paddingTop:    `${barHeight + 24}px`,
                             paddingBottom: '0',
                             paddingLeft:   `${formRect.left}px`,
                             paddingRight:  `${rightOffset}px`,
