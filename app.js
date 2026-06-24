@@ -1053,7 +1053,7 @@
     function buildAnswerBlock() {
         const el = document.createElement('div');
         el.className = 'answer-block';
-        Object.assign(el.style, { opacity: '0', transform: 'translateY(150px)', transition: 'opacity 350ms ease-out, transform 350ms ease-out' });
+        Object.assign(el.style, { opacity: '0', transform: 'translateY(150px)', transition: 'opacity 440ms cubic-bezier(0.0, 0.0, 0.1, 1), transform 440ms cubic-bezier(0.0, 0.0, 0.1, 1)' });
         el.innerHTML = `
 <div class="answer-text-group">
   <p class="answer-main-title">Total sales this year (2026)</p>
@@ -1164,9 +1164,9 @@
 
         // 6. Animate in next rAF so pinned positions are painted first
         requestAnimationFrame(() => requestAnimationFrame(() => {
-            // Diagonal slide: move down + horizontally center in full viewport
+            // Option 2: snap prompt box instantly; options 1 & 3: slide with easing
             if (homeStack) {
-                homeStack.style.transition = `transform ${easing}`;
+                homeStack.style.transition = submitFlow === 'option2' ? 'none' : `transform ${easing}`;
                 homeStack.style.transform  = `translate(${deltaX}px, ${deltaY}px)`;
             }
 
