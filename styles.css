@@ -1238,16 +1238,14 @@ html[data-home-variation="top-wash"] .panel {
     box-shadow: 0 16px 42px -34px rgba(25, 35, 49, 0.2);
 }
 
-html[data-theme="dark"][data-home-variation="next"] .panel,
-html[data-theme="dark"][data-home-variation="top-wash"] .panel {
-    border-color: transparent;
-    background: rgba(34, 35, 38, 0.86);
+html[data-theme="dark"] .panel {
+    border-color: #303136;
+    background: var(--on-base);
     box-shadow: none;
 }
 
-html[data-theme="dark"][data-home-variation="next"] .panel-head,
-html[data-theme="dark"][data-home-variation="top-wash"] .panel-head {
-    border-bottom-color: rgba(255, 255, 255, 0.035);
+html[data-theme="dark"] .panel-head {
+    border-bottom-color: rgba(255, 255, 255, 0.06);
 }
 
 .recents-panel {
@@ -1813,6 +1811,8 @@ html[data-theme="dark"] .exploration-fab {
     right: 24px;
     bottom: 76px;
     width: min(320px, calc(100vw - 32px));
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
     padding: 16px;
     border: 1px solid var(--border);
     border-radius: 12px;
@@ -3367,13 +3367,18 @@ html[data-theme="dark"] .prompt-send-button {
     padding: 8px 16px;
     border: 1px solid var(--border, #eaedf2);
     border-radius: 40px;
-    background: var(--base, #fff);
+    background: var(--raised, #fff);
     color: var(--secondary-text, #777e8b);
     font-size: 14px;
     line-height: 20px;
     cursor: pointer;
     transition: background 140ms ease, border-color 140ms ease;
     white-space: nowrap;
+}
+
+html[data-theme="dark"] .starter-prompt-chip {
+    background: var(--on-base);
+    border-color: #303136;
 }
 
 .starter-prompt-chip:hover {

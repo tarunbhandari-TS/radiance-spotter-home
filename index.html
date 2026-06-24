@@ -187,7 +187,7 @@
                                     </div>
 
                                     <div class="prompt-bar-right">
-                                        <button class="prompt-send-button" type="submit" aria-label="Send query" data-tooltip="Send">
+                                        <button class="prompt-send-button" type="submit" aria-label="Send query">
                                             <span class="send-icon" aria-hidden="true"></span>
                                         </button>
                                     </div>
@@ -330,7 +330,20 @@
             <div class="flow-switch" id="flow-switch" role="radiogroup" aria-label="Submit flow option">
                 <button class="flow-option is-selected" type="button" data-flow="option1" role="radio" aria-checked="true">Option 1</button>
                 <button class="flow-option" type="button" data-flow="option2" role="radio" aria-checked="false">Option 2</button>
+                <button class="flow-option" type="button" data-flow="option3" role="radio" aria-checked="false">Option 3</button>
             </div>
+        </div>
+
+        <div class="exploration-section">
+            <p>Gradient background</p>
+            <label class="slider-row">
+                <span>Opacity <em id="bg-opacity-val">100%</em></span>
+                <input type="range" id="bg-opacity" min="0" max="100" step="1" value="100" aria-label="Background opacity">
+            </label>
+            <label class="slider-row">
+                <span>Y position <em id="bg-y-val">0px</em></span>
+                <input type="range" id="bg-y" min="-500" max="500" step="1" value="0" aria-label="Background Y position">
+            </label>
         </div>
 
     </aside>

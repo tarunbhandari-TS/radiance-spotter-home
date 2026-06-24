@@ -298,17 +298,56 @@
     const bgRoot = document.getElementById("background-root");
     let bgManualY = 0;
     let bgManualOpacity = 1;
+    let bgTransitionTimer = null;
 
-    function applyBgTransform() {
+    function applyBgTransform(transition) {
         if (!bgRoot) return;
+        if (transition) bgRoot.style.transition = transition;
         bgRoot.style.transform = bgManualY !== 0 ? `translateY(${bgManualY}px)` : '';
     }
 
-    function applyBgOpacity() {
+    function applyBgOpacity(transition) {
         if (!bgRoot) return;
+        if (transition) bgRoot.style.transition = transition;
         bgRoot.style.opacity = bgManualOpacity < 1 ? String(bgManualOpacity) : '';
         const homeMain = document.querySelector('.home-main');
         if (homeMain) homeMain.style.setProperty('--bg-overlay-opacity', String(bgManualOpacity));
+    }
+
+    // Animate both Y and opacity to target values, then sync sliders.
+    // persistValues: if true, saves to localStorage (use for user-initiated resets, not answer-load).
+    function animateBgTo(y, opacityPct, ms, persistValues) {
+        if (!bgRoot) return;
+        clearTimeout(bgTransitionTimer);
+        const easing = `${ms}ms cubic-bezier(0.0, 0.0, 0.2, 1)`; // ease-out
+        bgRoot.style.transition = `opacity ${easing}, transform ${easing}`;
+        // Drive pseudo-element animation via CSS variable (inline style can't target ::before/::after)
+        document.documentElement.style.setProperty('--bg-anim-duration', `${ms}ms`);
+
+        bgManualY       = y;
+        bgManualOpacity = opacityPct / 100;
+        applyBgTransform();
+        applyBgOpacity();
+
+        // Sync sliders and labels
+        if (bgOpacityInput) { bgOpacityInput.value = opacityPct; if (bgOpacityVal) bgOpacityVal.textContent = opacityPct + '%'; }
+        if (bgYInput)        { bgYInput.value = y;               if (bgYVal)       bgYVal.textContent = y + 'px'; }
+
+        // Only persist when explicitly requested (not for answer-load animations)
+        if (persistValues) {
+            try { localStorage.setItem('radiance-bg-controls', JSON.stringify({ opacity: opacityPct, y })); } catch (e) { /* ignore */ }
+        }
+
+        // After animation completes: kill all transitions so sliders are instant
+        bgTransitionTimer = setTimeout(() => {
+            if (bgRoot) bgRoot.style.transition = 'none';
+            document.documentElement.style.setProperty('--bg-anim-duration', '0ms');
+        }, ms + 50);
+    }
+
+    // Reset bg to default home state (Y=0, opacity=100%) with a graceful animation.
+    function resetBgToDefault() {
+        animateBgTo(0, 100, 500, true);
     }
 
     // Background controls
@@ -318,13 +357,15 @@
     const bgYVal         = document.getElementById('bg-y-val');
 
     function applyBgControls() {
+        // Cancel any in-progress animation and go instant
+        clearTimeout(bgTransitionTimer);
+        if (bgRoot) bgRoot.style.transition = 'none';
+        document.documentElement.style.setProperty('--bg-anim-duration', '0ms');
+
         if (bgOpacityInput) {
             bgManualOpacity = bgOpacityInput.value / 100;
             if (bgOpacityVal) bgOpacityVal.textContent = bgOpacityInput.value + '%';
             applyBgOpacity();
-            // Also fade the pseudo-element overlays via a CSS var on .home-main
-            const homeMain = document.querySelector('.home-main');
-            if (homeMain) homeMain.style.setProperty('--bg-overlay-opacity', String(bgManualOpacity));
         }
         if (bgYInput) {
             bgManualY = Number(bgYInput.value);
@@ -340,10 +381,9 @@
     }
 
     function loadBgControls() {
-        let stored = {};
-        try { stored = JSON.parse(localStorage.getItem('radiance-bg-controls') || '{}'); } catch (e) { stored = {}; }
-        if (bgOpacityInput && stored.opacity !== undefined) bgOpacityInput.value = stored.opacity;
-        if (bgYInput && stored.y !== undefined) bgYInput.value = stored.y;
+        // Always start at defaults — answer-animated values must not persist across page loads.
+        if (bgOpacityInput) bgOpacityInput.value = 100;
+        if (bgYInput)       bgYInput.value       = 0;
         applyBgControls();
     }
 
@@ -483,7 +523,8 @@
         });
         askForm.addEventListener("focusout", () => {
             window.Background._setFocusTimer(() => {
-                const isStillFocused = window.Background.isFocusVariation() && askForm.contains(document.activeElement);
+                const starterCardOpen = (qsCard && !qsCard.hidden) || (daCard && !daCard.hidden);
+                const isStillFocused = window.Background.isFocusVariation() && (askForm.contains(document.activeElement) || starterCardOpen);
                 window.Background.setQueryFocus(isStillFocused, window.Background.isFocusVariation() && !isStillFocused);
             });
         });
@@ -696,6 +737,7 @@
         }
         setSendArrow();
         liveScrollEl = null;
+        resetBgToDefault();
     }
 
     function goToHome(push) {
@@ -872,10 +914,11 @@
         daClose.addEventListener('click', (e) => { e.stopPropagation(); closeStarterCard(daChip, daCard); });
     }
 
-    // Close on outside click
+    // Close on outside click — but keep card open when the user clicks the prompt box
     document.addEventListener('pointerdown', (e) => {
-        if (qsCard && !qsCard.hidden && !qsCard.contains(e.target) && !qsChip.contains(e.target)) closeStarterCard(qsChip, qsCard);
-        if (daCard && !daCard.hidden && !daCard.contains(e.target) && !daChip.contains(e.target)) closeStarterCard(daChip, daCard);
+        const inPrompt = askForm && askForm.contains(e.target);
+        if (qsCard && !qsCard.hidden && !qsCard.contains(e.target) && !qsChip.contains(e.target) && !inPrompt) closeStarterCard(qsChip, qsCard);
+        if (daCard && !daCard.hidden && !daCard.contains(e.target) && !daChip.contains(e.target) && !inPrompt) closeStarterCard(daChip, daCard);
     });
 
     // ── Reasoning collapse + scroll helpers ──
@@ -1010,7 +1053,7 @@
     function buildAnswerBlock() {
         const el = document.createElement('div');
         el.className = 'answer-block';
-        Object.assign(el.style, { opacity: '0', transition: 'opacity 200ms ease' });
+        Object.assign(el.style, { opacity: '0', transform: 'translateY(150px)', transition: 'opacity 350ms ease-out, transform 350ms ease-out' });
         el.innerHTML = `
 <div class="answer-text-group">
   <p class="answer-main-title">Total sales this year (2026)</p>
@@ -1433,6 +1476,7 @@
                                         // bring it into view below the title bar.
                                         window.setTimeout(() => {
                                             answerEl.style.opacity = '1';
+                                            answerEl.style.transform = 'translateY(0)';
                                             const inset = answerBarInset();
                                             const sRect = scrollEl.getBoundingClientRect();
                                             // Scroll so 'Show work' sits 24px below the answer title bar.
@@ -1445,6 +1489,7 @@
                                             smoothScrollTo(scrollEl, targetScrollTop, 480);
                                             setTimeout(() => {
                                                 setSendArrow();
+                                                animateBgTo(-500, 0, 5000);
                                             }, 480 + 50);
                                             if (askInput) askInput.focus({ preventScroll: true });
                                         }, 320);
