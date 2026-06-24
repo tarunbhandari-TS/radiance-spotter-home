@@ -221,8 +221,16 @@ html[data-query-effect="top-focus"][data-query-focus="true"] .home-radiance {
     z-index: 0;
     overflow: hidden;
     pointer-events: none;
-    transition: transform 1400ms cubic-bezier(0.22, 1, 0.36, 1);
+    transition: opacity 800ms ease, transform 1400ms cubic-bezier(0.22, 1, 0.36, 1);
 }
+
+/* Fade out the entire radiance background (canvas + pseudo-element overlays) when answer settles */
+.home-main::before,
+.home-main::after {
+    opacity: var(--bg-overlay-opacity, 1);
+    transition: opacity 1250ms ease;
+}
+
 
 /* ─── Home Radiance component ───────────────────────────────────────────────── */
 

@@ -25,7 +25,7 @@
     const DEFAULT_VARIATION = "top-wash";
     const DEFAULT_ANSWER_FILL = "glass";
     const ANSWER_FILLS = ["solid", "glass", "gradient"];
-    const SUBMIT_FLOWS = ["option1", "option2"];
+    const SUBMIT_FLOWS = ["option1", "option2", "option3"];
     const DEFAULT_SUBMIT_FLOW = "option1";
     let submitFlow = DEFAULT_SUBMIT_FLOW;
     let nextKpiIndex = 0;
@@ -74,6 +74,32 @@
         card.addEventListener("animationend", () => card.classList.remove("is-wiggling"), { once: true });
     }
 
+    const sendButton = document.querySelector('.prompt-send-button');
+
+    function setSendSquare() {
+        if (!sendButton) return;
+        sendButton.classList.add('is-loading');
+        const iconEl = sendButton.querySelector('.send-icon');
+        if (iconEl) {
+            iconEl.classList.add('send-icon--square');
+            iconEl.style.webkitMask = 'none';
+            iconEl.style.mask = 'none';
+            iconEl.style.backgroundImage = 'none';
+        }
+    }
+
+    function setSendArrow() {
+        if (!sendButton) return;
+        sendButton.classList.remove('is-loading');
+        const iconEl = sendButton.querySelector('.send-icon');
+        if (iconEl) {
+            iconEl.classList.remove('send-icon--square');
+            iconEl.style.webkitMask = '';
+            iconEl.style.mask = '';
+            iconEl.style.backgroundImage = '';
+        }
+    }
+
     function submitQuery(event) {
         event.preventDefault();
         if (!askInput || !askInput.value.trim()) {
@@ -81,6 +107,7 @@
             if (askInput) askInput.focus();
             return;
         }
+        setSendSquare();
         runSpotterTransition();
     }
 
@@ -208,7 +235,12 @@
         });
     }
 
-    // Submit flow: option1 = radiance only, option2 = masked scroll container.
+    // Live references set when an answer is active — used for on-the-fly option switching.
+    let liveScrollEl = null;
+    let liveBarTop = 0;
+    let liveBarBottom = 0;
+
+    // Submit flow: option1 = radiance only, option2 = masked scroll, option3 = transparent bar.
     function applySubmitFlow(flow) {
         submitFlow = SUBMIT_FLOWS.includes(flow) ? flow : DEFAULT_SUBMIT_FLOW;
         try { localStorage.setItem("radiance-submit-flow", submitFlow); } catch (e) { /* ignore */ }
@@ -217,13 +249,106 @@
             btn.classList.toggle("is-selected", isSel);
             btn.setAttribute("aria-checked", String(isSel));
         });
+
+        // If an answer is already on screen, update the scroll container and title bar live.
+        if (!liveScrollEl) return;
+
+        const isOpt1 = submitFlow === 'option1';
+        const isOpt2 = submitFlow === 'option2';
+        const isOpt3 = submitFlow === 'option3';
+
+        liveScrollEl.style.top       = isOpt1 ? `${liveBarTop}px` : isOpt3 ? `${liveBarBottom - 20}px` : `${liveBarBottom}px`;
+        liveScrollEl.style.paddingTop = isOpt1 ? `${(liveBarBottom - liveBarTop) + 24}px` : '24px';
+
+        if (isOpt2) {
+            liveScrollEl.style.webkitMaskImage = 'linear-gradient(to bottom, transparent 0px, black 32px)';
+            liveScrollEl.style.maskImage       = 'linear-gradient(to bottom, transparent 0px, black 32px)';
+        } else if (isOpt3) {
+            liveScrollEl.style.webkitMaskImage = 'linear-gradient(to bottom, transparent 0px, black 25px)';
+            liveScrollEl.style.maskImage       = 'linear-gradient(to bottom, transparent 0px, black 25px)';
+        } else {
+            liveScrollEl.style.webkitMaskImage = '';
+            liveScrollEl.style.maskImage       = '';
+        }
+
+        const answerBar = document.getElementById('answer-title-bar');
+        if (answerBar) {
+            if (submitFlow === 'option3') {
+                answerBar.style.setProperty('--answer-alpha', '0%');
+                answerBar.style.setProperty('--answer-blur', '0px');
+                answerBar.style.setProperty('--answer-noise', '0');
+                answerBar.style.background          = 'transparent';
+                answerBar.style.backdropFilter      = 'none';
+                answerBar.style.webkitBackdropFilter = 'none';
+                answerBar.style.boxShadow           = 'none';
+            } else {
+                answerBar.style.removeProperty('--answer-alpha');
+                answerBar.style.removeProperty('--answer-blur');
+                answerBar.style.removeProperty('--answer-noise');
+                answerBar.style.background          = '';
+                answerBar.style.backdropFilter      = '';
+                answerBar.style.webkitBackdropFilter = '';
+                answerBar.style.boxShadow           = '';
+                // Re-apply stored slider values
+                loadAnswerSliders();
+            }
+        }
     }
 
-    // Background pan — slides #background-root up when answer loads, resets on navigation.
     const bgRoot = document.getElementById("background-root");
-    function panBackground(offsetY) {
-        if (bgRoot) bgRoot.style.transform = offsetY ? `translateY(${offsetY}px)` : "";
+    let bgManualY = 0;
+    let bgManualOpacity = 1;
+
+    function applyBgTransform() {
+        if (!bgRoot) return;
+        bgRoot.style.transform = bgManualY !== 0 ? `translateY(${bgManualY}px)` : '';
     }
+
+    function applyBgOpacity() {
+        if (!bgRoot) return;
+        bgRoot.style.opacity = bgManualOpacity < 1 ? String(bgManualOpacity) : '';
+        const homeMain = document.querySelector('.home-main');
+        if (homeMain) homeMain.style.setProperty('--bg-overlay-opacity', String(bgManualOpacity));
+    }
+
+    // Background controls
+    const bgOpacityInput = document.getElementById('bg-opacity');
+    const bgOpacityVal   = document.getElementById('bg-opacity-val');
+    const bgYInput       = document.getElementById('bg-y');
+    const bgYVal         = document.getElementById('bg-y-val');
+
+    function applyBgControls() {
+        if (bgOpacityInput) {
+            bgManualOpacity = bgOpacityInput.value / 100;
+            if (bgOpacityVal) bgOpacityVal.textContent = bgOpacityInput.value + '%';
+            applyBgOpacity();
+            // Also fade the pseudo-element overlays via a CSS var on .home-main
+            const homeMain = document.querySelector('.home-main');
+            if (homeMain) homeMain.style.setProperty('--bg-overlay-opacity', String(bgManualOpacity));
+        }
+        if (bgYInput) {
+            bgManualY = Number(bgYInput.value);
+            if (bgYVal) bgYVal.textContent = bgYInput.value + 'px';
+            applyBgTransform();
+        }
+        try {
+            localStorage.setItem('radiance-bg-controls', JSON.stringify({
+                opacity: bgOpacityInput ? bgOpacityInput.value : 100,
+                y:       bgYInput ? bgYInput.value : 0,
+            }));
+        } catch (e) { /* ignore */ }
+    }
+
+    function loadBgControls() {
+        let stored = {};
+        try { stored = JSON.parse(localStorage.getItem('radiance-bg-controls') || '{}'); } catch (e) { stored = {}; }
+        if (bgOpacityInput && stored.opacity !== undefined) bgOpacityInput.value = stored.opacity;
+        if (bgYInput && stored.y !== undefined) bgYInput.value = stored.y;
+        applyBgControls();
+    }
+
+    if (bgOpacityInput) bgOpacityInput.addEventListener('input', applyBgControls);
+    if (bgYInput) bgYInput.addEventListener('input', applyBgControls);
 
     function addKpi() {
         const [name, cadence, value, trend, direction] = kpiQueue[nextKpiIndex % kpiQueue.length];
@@ -295,6 +420,7 @@
     let storedFlow = DEFAULT_SUBMIT_FLOW;
     try { storedFlow = localStorage.getItem("radiance-submit-flow") || DEFAULT_SUBMIT_FLOW; } catch (e) { /* ignore */ }
     applySubmitFlow(storedFlow);
+    loadBgControls();
 
     // Entrance animation on initial page load.
     window.requestAnimationFrame(() => playEntranceAnimation());
@@ -542,7 +668,7 @@
 
     function goToSpotterLanding(push) {
         if (document.body.classList.contains("spotter-page")) return;
-        panBackground(0);
+        resetAnswerBar();
         const panels = document.querySelector(".home-panels");
         if (panels) { panels.style.transition = "opacity 140ms ease"; panels.style.opacity = "0"; }
         window.setTimeout(() => {
@@ -556,9 +682,25 @@
         if (push !== false) history.pushState({ page: "spotter-landing" }, "", basePath() + "Spotterhome");
     }
 
+    function resetAnswerBar() {
+        const bar = document.getElementById('answer-title-bar');
+        if (bar) {
+            bar.style.background = '';
+            bar.style.backdropFilter = '';
+            bar.style.webkitBackdropFilter = '';
+            bar.style.boxShadow = '';
+            bar.style.removeProperty('--answer-alpha');
+            bar.style.removeProperty('--answer-blur');
+            bar.style.removeProperty('--answer-noise');
+            delete bar.dataset.fill;
+        }
+        setSendArrow();
+        liveScrollEl = null;
+    }
+
     function goToHome(push) {
         if (!document.body.classList.contains("spotter-page")) return;
-        panBackground(0);
+        resetAnswerBar();
         const panels = document.querySelector(".home-panels");
         flipStack(() => {
             document.body.classList.remove("spotter-page");
@@ -1032,6 +1174,16 @@
                     answerBar.removeAttribute('aria-hidden');
                     answerBar.style.transition = 'transform 250ms cubic-bezier(0.25, 0.46, 0.45, 0.94)';
                     answerBar.style.transform  = 'translateY(0)';
+                    if (submitFlow === 'option3') {
+                        answerBar.dataset.fill = 'transparent';
+                        answerBar.style.setProperty('--answer-alpha', '0%');
+                        answerBar.style.setProperty('--answer-blur', '0px');
+                        answerBar.style.setProperty('--answer-noise', '0');
+                        answerBar.style.background = 'transparent';
+                        answerBar.style.backdropFilter = 'none';
+                        answerBar.style.webkitBackdropFilter = 'none';
+                        answerBar.style.boxShadow = 'none';
+                    }
                 }
 
                 // +250ms: bar settled → question bubble springs in
@@ -1056,10 +1208,16 @@
                         scrollEl = document.createElement('div');
                         scrollEl.className = 'conversation-scroll';
                         const barBottom = barTop + barHeight;
-                        const isOpt1 = submitFlow !== 'option2';
+                        const isOpt1 = submitFlow === 'option1';
+                        const isOpt2 = submitFlow === 'option2';
+                        liveScrollEl  = scrollEl;
+                        liveBarTop    = barTop;
+                        liveBarBottom = barBottom;
+                        const isOpt3 = submitFlow === 'option3';
+                        const scrollTop = isOpt1 ? barTop : isOpt3 ? barBottom - 20 : barBottom;
                         Object.assign(scrollEl.style, {
                             position:      'fixed',
-                            top:           isOpt1 ? `${barTop}px` : `${barBottom}px`,
+                            top:           `${scrollTop}px`,
                             left:          '0',
                             right:         '0',
                             bottom:        `${window.innerHeight - pRect.top + 12}px`,
@@ -1071,9 +1229,12 @@
                             paddingBottom: '0',
                             paddingLeft:   `${formRect.left}px`,
                             paddingRight:  `${rightOffset}px`,
-                            ...(!isOpt1 ? {
-                                WebkitMaskImage: 'linear-gradient(to bottom, transparent 0px, black 24px)',
-                                maskImage:       'linear-gradient(to bottom, transparent 0px, black 24px)',
+                            ...(isOpt2 ? {
+                                WebkitMaskImage: 'linear-gradient(to bottom, transparent 0px, black 32px)',
+                                maskImage:       'linear-gradient(to bottom, transparent 0px, black 32px)',
+                            } : isOpt3 ? {
+                                WebkitMaskImage: 'linear-gradient(to bottom, transparent 0px, black 25px)',
+                                maskImage:       'linear-gradient(to bottom, transparent 0px, black 25px)',
                             } : {}),
                         });
                         document.body.appendChild(scrollEl);
@@ -1272,8 +1433,6 @@
                                         // bring it into view below the title bar.
                                         window.setTimeout(() => {
                                             answerEl.style.opacity = '1';
-                                            // Pan the radiance background up once the answer lands.
-                                            panBackground(-75);
                                             const inset = answerBarInset();
                                             const sRect = scrollEl.getBoundingClientRect();
                                             // Scroll so 'Show work' sits 24px below the answer title bar.
@@ -1284,6 +1443,9 @@
                                                 answerEl.style.paddingBottom = `${targetScrollTop - maxScroll}px`;
                                             }
                                             smoothScrollTo(scrollEl, targetScrollTop, 480);
+                                            setTimeout(() => {
+                                                setSendArrow();
+                                            }, 480 + 50);
                                             if (askInput) askInput.focus({ preventScroll: true });
                                         }, 320);
                                     }

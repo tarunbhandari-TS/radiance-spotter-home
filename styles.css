@@ -345,22 +345,7 @@ html[data-home-variation="top-wash"] .home-main::after {
 }
 
 .spotter-subtitle-brand {
-    background: linear-gradient(90deg, #71A1F4, #B094F8, #71A1F4);
-    background-size: 200% 100%;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: transparent;
-    animation: brand-gradient-flow 5s linear infinite;
-}
-
-html[data-theme="light"] .spotter-subtitle-brand {
-    background: linear-gradient(90deg, #2770EF, #B094F8, #2770EF);
-    background-size: 200% 100%;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: transparent;
+    color: var(--brand);
 }
 
 @keyframes brand-gradient-flow {
@@ -1906,7 +1891,7 @@ html[data-theme="dark"] .exploration-popover {
 /* ── Submit-flow switch (Option 1 / Option 2) ── */
 .flow-switch {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(3, 1fr);
     gap: 4px;
     padding: 4px;
     border: 1px solid var(--border);
@@ -3325,15 +3310,19 @@ html[data-theme="dark"] .prompt-add-menu {
     width: 32px;
     height: 32px;
     border: 0;
-    border-radius: 10px;
+    border-radius: 50%;
     background: var(--brand);
-    color: var(--base);
+    color: #ffffff;
     cursor: pointer;
-    transition: filter 160ms ease;
+    transition: background 160ms ease;
+}
+
+html[data-theme="dark"] .prompt-send-button {
+    color: #000000;
 }
 
 .prompt-send-button:hover {
-    filter: brightness(1.05);
+    background: #2359B6;
 }
 
 .prompt-send-button .send-icon {
@@ -3344,6 +3333,21 @@ html[data-theme="dark"] .prompt-add-menu {
 
 .prompt-send-button:hover .send-icon {
     transform: rotate(90deg);
+}
+
+.prompt-send-button.is-loading {
+    cursor: default;
+    pointer-events: none;
+}
+
+.prompt-send-button .send-icon--square {
+    width: 14px;
+    height: 14px;
+    border-radius: 2px;
+    background: currentColor;
+    -webkit-mask: none;
+    mask: none;
+    display: block;
 }
 
 /* ── Starter prompt chips ── */
