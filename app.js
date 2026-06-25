@@ -1141,10 +1141,16 @@
             spotterNav.style.transform  = 'translateX(0)';
         }
 
-        // 2. Panels vanish instantly
+        // 2. Panels: fade out on option3, vanish instantly otherwise
         if (homePanels) {
-            homePanels.style.opacity       = '0';
-            homePanels.style.pointerEvents = 'none';
+            if (submitFlow === 'option3') {
+                homePanels.style.transition    = `opacity ${DURATION}ms cubic-bezier(0.25, 0.46, 0.45, 0.94)`;
+                homePanels.style.pointerEvents = 'none';
+                requestAnimationFrame(() => { homePanels.style.opacity = '0'; });
+            } else {
+                homePanels.style.opacity       = '0';
+                homePanels.style.pointerEvents = 'none';
+            }
         }
 
         // Disclaimer stays visible throughout
@@ -1164,10 +1170,27 @@
 
         // 6. Animate in next rAF so pinned positions are painted first
         requestAnimationFrame(() => requestAnimationFrame(() => {
-            // Option 2: snap prompt box instantly; options 1 & 3: slide with easing
+            // Option 2: snap instantly. Option 3: jump invisible to final pos, fade in from below.
+            // Options 1: slide with easing.
             if (homeStack) {
-                homeStack.style.transition = submitFlow === 'option2' ? 'none' : `transform ${easing}`;
-                homeStack.style.transform  = `translate(${deltaX}px, ${deltaY}px)`;
+                if (submitFlow === 'option2') {
+                    homeStack.style.transition = 'none';
+                    homeStack.style.transform  = `translate(${deltaX}px, ${deltaY}px)`;
+                } else if (submitFlow === 'option3') {
+                    // Jump to final position offset 40px below, invisible
+                    homeStack.style.transition = 'none';
+                    homeStack.style.opacity    = '0';
+                    homeStack.style.transform  = `translate(${deltaX}px, ${deltaY + 40}px)`;
+                    // Fade + slide up to final position
+                    requestAnimationFrame(() => {
+                        homeStack.style.transition = `opacity ${DURATION}ms cubic-bezier(0.0, 0.0, 0.1, 1), transform ${DURATION}ms cubic-bezier(0.0, 0.0, 0.1, 1)`;
+                        homeStack.style.opacity    = '1';
+                        homeStack.style.transform  = `translate(${deltaX}px, ${deltaY}px)`;
+                    });
+                } else {
+                    homeStack.style.transition = `transform ${easing}`;
+                    homeStack.style.transform  = `translate(${deltaX}px, ${deltaY}px)`;
+                }
             }
 
             // Title and chips fade out quickly (150ms)
@@ -1183,6 +1206,10 @@
         // 7. After animation completes
         setTimeout(() => {
             if (homePanels) homePanels.remove();
+            if (homeStack && submitFlow === 'option3') {
+                homeStack.style.transition = 'none';
+                homeStack.style.opacity    = '';
+            }
 
             // Reset prompt box for /spotterhome
             inputLocked = false;
