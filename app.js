@@ -26,7 +26,7 @@
     const DEFAULT_ANSWER_FILL = "glass";
     const ANSWER_FILLS = ["solid", "glass", "gradient"];
     const SUBMIT_FLOWS = ["option1", "option2", "option3"];
-    const DEFAULT_SUBMIT_FLOW = "option1";
+    const DEFAULT_SUBMIT_FLOW = "option3";
     let submitFlow = DEFAULT_SUBMIT_FLOW;
     let nextKpiIndex = 0;
 
@@ -250,6 +250,10 @@
             btn.setAttribute("aria-checked", String(isSel));
         });
 
+        // Option 3: freeze blobs on /home; other options let them animate freely.
+        window.Background.freezeMotion(submitFlow === 'option3');
+        document.documentElement.dataset.submitFlow = submitFlow;
+
         // If an answer is already on screen, update the scroll container and title bar live.
         if (!liveScrollEl) return;
 
@@ -299,6 +303,7 @@
     let bgManualY = 0;
     let bgManualOpacity = 1;
     let bgTransitionTimer = null;
+    let bgVisible = true;
 
     function applyBgTransform(transition) {
         if (!bgRoot) return;
@@ -309,6 +314,7 @@
     function applyBgOpacity(transition) {
         if (!bgRoot) return;
         if (transition) bgRoot.style.transition = transition;
+        if (!bgVisible) return;
         bgRoot.style.opacity = bgManualOpacity < 1 ? String(bgManualOpacity) : '';
         const homeMain = document.querySelector('.home-main');
         if (homeMain) homeMain.style.setProperty('--bg-overlay-opacity', String(bgManualOpacity));
@@ -321,13 +327,23 @@
         clearTimeout(bgTransitionTimer);
         const easing = `${ms}ms cubic-bezier(0.0, 0.0, 0.2, 1)`; // ease-out
         bgRoot.style.transition = `opacity ${easing}, transform ${easing}`;
-        // Drive pseudo-element animation via CSS variable (inline style can't target ::before/::after)
+
+        // Fade the CSS ::before/::after overlay instantly (duration 0ms) so it doesn't
+        // lag behind the canvas as it moves on Y, which would create two visible gradient layers.
+        document.documentElement.style.setProperty('--bg-anim-duration', '0ms');
+        const homeMain = document.querySelector('.home-main');
+        if (homeMain) homeMain.style.setProperty('--bg-overlay-opacity', String(opacityPct / 100));
+
+        // Now set the canvas animation duration for bgRoot opacity + transform
         document.documentElement.style.setProperty('--bg-anim-duration', `${ms}ms`);
 
         bgManualY       = y;
         bgManualOpacity = opacityPct / 100;
         applyBgTransform();
-        applyBgOpacity();
+        // Apply canvas opacity directly — skip applyBgOpacity to avoid re-setting --bg-overlay-opacity
+        if (!bgVisible) { /* leave at 0 */ } else {
+            bgRoot.style.opacity = bgManualOpacity < 1 ? String(bgManualOpacity) : '';
+        }
 
         // Sync sliders and labels
         if (bgOpacityInput) { bgOpacityInput.value = opacityPct; if (bgOpacityVal) bgOpacityVal.textContent = opacityPct + '%'; }
@@ -389,6 +405,21 @@
 
     if (bgOpacityInput) bgOpacityInput.addEventListener('input', applyBgControls);
     if (bgYInput) bgYInput.addEventListener('input', applyBgControls);
+
+    const bgVisibleToggle = document.getElementById('bg-visible-toggle');
+    if (bgVisibleToggle) {
+        bgVisibleToggle.addEventListener('click', () => {
+            bgVisible = !bgVisible;
+            bgVisibleToggle.setAttribute('aria-checked', String(bgVisible));
+            const switchImg = bgVisibleToggle.querySelector('.menu-item-switch');
+            if (switchImg) switchImg.src = bgVisible ? 'assets/menu/toggle-on.svg' : 'assets/menu/toggle-off.svg';
+            if (bgRoot) {
+                clearTimeout(bgTransitionTimer);
+                bgRoot.style.transition = 'opacity 300ms ease';
+                bgRoot.style.opacity = bgVisible ? (bgManualOpacity < 1 ? String(bgManualOpacity) : '') : '0';
+            }
+        });
+    }
 
     function addKpi() {
         const [name, cadence, value, trend, direction] = kpiQueue[nextKpiIndex % kpiQueue.length];
@@ -457,9 +488,7 @@
     loadAnswerSliders();
     applyAnswerFill(storedAnswerFill);
 
-    let storedFlow = DEFAULT_SUBMIT_FLOW;
-    try { storedFlow = localStorage.getItem("radiance-submit-flow") || DEFAULT_SUBMIT_FLOW; } catch (e) { /* ignore */ }
-    applySubmitFlow(storedFlow);
+    applySubmitFlow(DEFAULT_SUBMIT_FLOW);
     loadBgControls();
 
     // Entrance animation on initial page load.
@@ -496,7 +525,7 @@
             e.preventDefault();
             typewriterStarted = true;
             askInput.value = '';
-            const QUERY = 'show me sales of last year';
+            const QUERY = 'Show me sales of last year';
             const chars = QUERY.split('');
             let i = 0;
             const tw = setInterval(() => {
@@ -738,6 +767,8 @@
         setSendArrow();
         liveScrollEl = null;
         resetBgToDefault();
+        // Re-freeze blobs if option3 is still selected when returning to /home
+        if (submitFlow === 'option3') window.Background.freezeMotion(true);
     }
 
     function goToHome(push) {
@@ -956,11 +987,12 @@
     }
 
     function setReasoningCollapsed(block, collapsed, animate) {
-        const body = block.querySelector('.reasoning-block-body');
-        const header = block.querySelector('.reasoning-block-header');
+        const body = block.querySelector('.r2-body');
+        const trigger = block.querySelector('.r2-trigger');
         if (!body) return;
         block.classList.toggle('is-collapsed', collapsed);
-        if (header) header.setAttribute('aria-expanded', String(!collapsed));
+        block.dataset.expanded = String(!collapsed);
+        if (trigger) trigger.setAttribute('aria-expanded', String(!collapsed));
         if (!animate) {
             body.style.transition = 'none';
             body.style.maxHeight = collapsed ? '0px' : '';
@@ -968,7 +1000,7 @@
             requestAnimationFrame(() => { body.style.transition = ''; });
             return;
         }
-        body.style.transition = 'max-height 280ms ease, opacity 200ms ease';
+        body.style.transition = 'max-height 420ms cubic-bezier(0.22, 1, 0.36, 1), opacity 220ms ease';
         const full = body.scrollHeight;
         if (collapsed) {
             body.style.maxHeight = full + 'px';
@@ -992,17 +1024,17 @@
         }
     }
 
-    // Wire the "Show work" header so it toggles the steps and re-aims the scroll.
+    // Wire the "Show work" trigger so it toggles the steps and re-aims the scroll.
     function wireReasoningToggle(block, scrollEl) {
-        const header = block.querySelector('.reasoning-block-header');
-        if (!header) return;
-        header.setAttribute('role', 'button');
-        header.setAttribute('tabindex', '0');
+        const trigger = block.querySelector('.r2-trigger');
+        if (!trigger) return;
+        trigger.setAttribute('tabindex', '0');
         function toggle() {
-            if (!header.classList.contains('is-done')) return; // only once finished
+            if (!block.classList.contains('r2-done')) return;
             const willExpand = block.classList.contains('is-collapsed');
             setReasoningCollapsed(block, !willExpand, true);
-            // After the height animation settles, re-aim the scroll.
+            const labelEl = trigger.querySelector('.r2-trigger-label');
+            if (labelEl) labelEl.textContent = willExpand ? 'Hide work' : 'Show work';
             window.setTimeout(() => {
                 if (!scrollEl) return;
                 if (willExpand) {
@@ -1011,10 +1043,10 @@
                     const ans = scrollEl.querySelector('.answer-block');
                     if (ans) scrollElementIntoView(scrollEl, ans, answerBarInset());
                 }
-            }, 300);
+            }, 430);
         }
-        header.addEventListener('click', toggle);
-        header.addEventListener('keydown', (e) => {
+        trigger.addEventListener('click', toggle);
+        trigger.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
         });
     }
@@ -1104,8 +1136,11 @@
         transitionFired = true;
 
         const queryText = askInput ? askInput.value.trim() : '';
-        const DURATION = 450;
+        const DURATION = 540;
         const easing = `${DURATION}ms cubic-bezier(0.25, 0.46, 0.45, 0.94)`; // ease-out
+
+        // Option 3: unfreeze blobs now that we're leaving /home
+        if (submitFlow === 'option3') window.Background.freezeMotion(false);
 
         // Close any open starter cards
         if (qsCard && !qsCard.hidden) closeStarterCard(qsChip, qsCard);
@@ -1141,16 +1176,10 @@
             spotterNav.style.transform  = 'translateX(0)';
         }
 
-        // 2. Panels: fade out on option3, vanish instantly otherwise
+        // 2. Panels vanish instantly on all options
         if (homePanels) {
-            if (submitFlow === 'option3') {
-                homePanels.style.transition    = `opacity ${DURATION}ms cubic-bezier(0.25, 0.46, 0.45, 0.94)`;
-                homePanels.style.pointerEvents = 'none';
-                requestAnimationFrame(() => { homePanels.style.opacity = '0'; });
-            } else {
-                homePanels.style.opacity       = '0';
-                homePanels.style.pointerEvents = 'none';
-            }
+            homePanels.style.opacity       = '0';
+            homePanels.style.pointerEvents = 'none';
         }
 
         // Disclaimer stays visible throughout
@@ -1181,9 +1210,10 @@
                     homeStack.style.transition = 'none';
                     homeStack.style.opacity    = '0';
                     homeStack.style.transform  = `translate(${deltaX}px, ${deltaY + 40}px)`;
-                    // Fade + slide up to final position
+                    // Fade + slide up to final position (25% slower than base duration)
+                    const opt3Dur = Math.round(DURATION * 1.25);
                     requestAnimationFrame(() => {
-                        homeStack.style.transition = `opacity ${DURATION}ms cubic-bezier(0.0, 0.0, 0.1, 1), transform ${DURATION}ms cubic-bezier(0.0, 0.0, 0.1, 1)`;
+                        homeStack.style.transition = `opacity ${opt3Dur}ms cubic-bezier(0.0, 0.0, 0.1, 1), transform ${opt3Dur}ms cubic-bezier(0.0, 0.0, 0.1, 1)`;
                         homeStack.style.opacity    = '1';
                         homeStack.style.transform  = `translate(${deltaX}px, ${deltaY}px)`;
                     });
@@ -1193,13 +1223,17 @@
                 }
             }
 
-            // Title and chips fade out quickly (150ms)
+            // Title and chips: instant on option3, fade quickly (150ms) on others
             const spotterCopy    = homeStack ? homeStack.querySelector('.spotter-copy') : null;
             const starterPrompts = homeStack ? homeStack.querySelector('.starter-prompts') : null;
             [spotterCopy, starterPrompts].forEach(el => {
                 if (!el) return;
-                el.style.transition = 'opacity 150ms cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-                el.style.opacity    = '0';
+                if (submitFlow === 'option3') {
+                    el.style.transition = 'none';
+                } else {
+                    el.style.transition = 'opacity 150ms cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+                }
+                el.style.opacity = '0';
             });
         }));
 
@@ -1242,7 +1276,7 @@
 
                 if (answerBar) {
                     answerBar.removeAttribute('aria-hidden');
-                    answerBar.style.transition = 'transform 250ms cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+                    answerBar.style.transition = 'transform 300ms cubic-bezier(0.25, 0.46, 0.45, 0.94)';
                     answerBar.style.transform  = 'translateY(0)';
                     if (submitFlow === 'option3') {
                         answerBar.dataset.fill = 'transparent';
@@ -1384,21 +1418,33 @@
                                 const pRect2         = promptBarEl2 ? promptBarEl2.getBoundingClientRect() : null;
                                 const reasoningWidth = pRect2 ? Math.round(pRect2.width * 0.85) : 520;
 
+                                // ── r2 reasoning block ──
                                 const block = document.createElement('div');
-                                block.className = 'reasoning-block';
+                                block.className = 'r2-block';
+                                block.dataset.expanded = 'false';
                                 Object.assign(block.style, {
-                                    width:      `${reasoningWidth}px`,
-                                    marginTop:  '36px',
-                                    opacity:    '0',
-                                    transition: 'opacity 200ms ease',
+                                    width:     `${reasoningWidth}px`,
+                                    marginTop: '36px',
+                                    opacity:   '0',
+                                    transition:'opacity 200ms ease',
                                 });
+
+                                const CHEVRON_SVG = `<svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="display:block;width:16px;height:16px"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
                                 block.innerHTML = `
-                                    <div class="reasoning-block-header">
-                                        <span class="reasoning-working-text">Working</span>
-                                        <span class="reasoning-header-chevron"></span>
+                                    <button class="r2-trigger" aria-expanded="false">
+                                        <span class="r2-dots-row" aria-hidden="true">
+                                            <span class="r2-dot-bounce"></span>
+                                            <span class="r2-dot-bounce"></span>
+                                            <span class="r2-dot-bounce"></span>
+                                        </span>
+                                        <span class="r2-chevron" aria-hidden="true">${CHEVRON_SVG}</span>
+                                    </button>
+                                    <div class="r2-body">
+                                        <div class="r2-slide"></div>
                                     </div>
-                                    <div class="reasoning-block-body"></div>
                                 `;
+
                                 if (scrollEl) scrollEl.appendChild(block);
                                 else document.body.appendChild(block);
 
@@ -1406,56 +1452,103 @@
                                     block.style.opacity = '1';
                                 }));
 
-                                const body = block.querySelector('.reasoning-block-body');
+                                const r2trigger = block.querySelector('.r2-trigger');
+                                const r2body    = block.querySelector('.r2-body');
+                                const r2slide   = block.querySelector('.r2-slide');
+                                const r2dots    = block.querySelector('.r2-dots-row');
+
+                                // Shimmer label (hidden until first step)
+                                const r2shimmer = document.createElement('span');
+                                r2shimmer.className = 'r2-shimmer';
+                                r2shimmer.style.display = 'none';
+
+                                function r2UpdateLabel(label) {
+                                    if (r2dots && r2dots.parentElement === r2trigger) {
+                                        r2trigger.removeChild(r2dots);
+                                        const chevron = r2trigger.querySelector('.r2-chevron');
+                                        r2shimmer.style.display = '';
+                                        r2trigger.insertBefore(r2shimmer, chevron);
+                                    }
+                                    r2shimmer.textContent = label;
+                                }
 
                                 const ITEMS = [
-                                    { type: 'para',   icon: 'assets/reasoning/spotter-dot.svg', text: 'Let me gather the necessary information to analyze sales performance in the East region with a store breakdown.' },
-                                    { type: 'action', icon: 'assets/reasoning/search-m.svg',    label: 'Fetching relevant semantic context' },
-                                    { type: 'action', icon: 'assets/reasoning/memory-l.svg',    label: 'Fetching memory' },
-                                    { type: 'para',   icon: 'assets/reasoning/spotter-dot.svg', text: 'I have the dataset context. Now let me fetch the sales data for the East region broken down by store, and find your Slack user ID so I can send you the results.' },
-                                    { type: 'action', icon: 'assets/reasoning/slack-icon.png',  label: 'Slack: Read user profile' },
-                                    { type: 'action', icon: 'assets/reasoning/answer-s.svg',    label: 'Visualizing data' },
-                                    { type: 'para',   icon: 'assets/reasoning/spotter-dot.svg', text: 'Done' },
+                                    { type: 'para',   summaryLabel: 'Planning the analysis',      text: 'Let me gather the necessary information to analyze sales performance in the East region with a store breakdown.' },
+                                    { type: 'action', summaryLabel: 'Fetching semantic context',   icon: 'assets/reasoning/search-m.svg',   label: 'Fetching relevant semantic context' },
+                                    { type: 'action', summaryLabel: 'Fetching memory',             icon: 'assets/reasoning/memory-l.svg',   label: 'Fetching memory' },
+                                    { type: 'para',   summaryLabel: 'Building the query',          text: 'I have the dataset context. Now let me fetch the sales data for the East region broken down by store, and find your Slack user ID so I can send you the results.' },
+                                    { type: 'action', summaryLabel: 'Reading user profile',        icon: 'assets/reasoning/slack-icon.png', label: 'Slack: Read user profile' },
+                                    { type: 'action', summaryLabel: 'Visualizing data',            icon: 'assets/reasoning/answer-s.svg',   label: 'Visualizing data' },
+                                    { type: 'done' },
                                 ];
 
-                                let prevRow = null;
+                                let r2prevRow = null;
 
                                 function addRow(idx) {
-                                    if (prevRow) {
-                                        const iconCol = prevRow.querySelector('.reasoning-row-icon-col');
-                                        const connector = document.createElement('div');
-                                        connector.className = 'reasoning-connector';
-                                        iconCol.appendChild(connector);
-                                    }
                                     const item = ITEMS[idx];
+                                    const isTerminal = idx === ITEMS.length - 1;
+
+                                    if (item.type !== 'done') {
+                                        r2UpdateLabel(item.summaryLabel);
+                                    }
+
+                                    // Add connecting line to previous row's rail
+                                    if (r2prevRow) {
+                                        const rail = r2prevRow.querySelector('.r2-rail');
+                                        if (rail && !rail.querySelector('.r2-line')) {
+                                            const ln = document.createElement('div');
+                                            ln.className = 'r2-line';
+                                            rail.appendChild(ln);
+                                        }
+                                    }
+
                                     const row = document.createElement('div');
-                                    row.className = 'reasoning-row';
+                                    row.className = 'r2-row';
+                                    if (isTerminal) row.dataset.terminal = 'true';
+
                                     if (item.type === 'para') {
                                         row.innerHTML = `
-                                            <div class="reasoning-row-icon-col">
-                                                <div class="reasoning-row-icon reasoning-row-icon--full">
-                                                    <img src="${item.icon}" alt="">
+                                            <div class="r2-rail"><div class="r2-icon-box"><span class="r2-dot-marker"></span></div></div>
+                                            <div class="r2-content"><p class="r2-text">${item.text}</p></div>
+                                        `;
+                                    } else if (item.type === 'action') {
+                                        row.innerHTML = `
+                                            <div class="r2-rail"><div class="r2-icon-box"><img src="${item.icon}" alt="" width="14" height="14" style="object-fit:contain"></div></div>
+                                            <div class="r2-content">
+                                                <div class="r2-tool-row">
+                                                    <span class="r2-tool-title r2-shimmer">${item.label}</span>
+                                                    <span class="r2-tool-chevron" aria-hidden="true">${CHEVRON_SVG}</span>
                                                 </div>
-                                            </div>
-                                            <div class="reasoning-row-text">
-                                                <span class="reasoning-row-para">${item.text}</span>
                                             </div>
                                         `;
+                                        // Remove shimmer after simulated load time
+                                        setTimeout(() => {
+                                            const titleEl2 = row.querySelector('.r2-tool-title');
+                                            if (titleEl2) titleEl2.classList.remove('r2-shimmer');
+                                        }, 1100);
                                     } else {
+                                        // done row
                                         row.innerHTML = `
-                                            <div class="reasoning-row-icon-col">
-                                                <div class="reasoning-row-icon reasoning-row-icon--sm">
-                                                    <img src="${item.icon}" alt="">
-                                                </div>
-                                            </div>
-                                            <div class="reasoning-row-text">
-                                                <span class="reasoning-row-label">${item.label}</span>
-                                                <img src="assets/reasoning/chevron-down.svg" class="reasoning-chevron" alt="">
-                                            </div>
+                                            <div class="r2-rail"><div class="r2-icon-box"><span class="r2-dot-marker"></span></div></div>
+                                            <div class="r2-content"><p class="r2-done-text">Done</p></div>
                                         `;
                                     }
-                                    body.appendChild(row);
-                                    prevRow = row;
+
+                                    r2slide.appendChild(row);
+                                    r2prevRow = row;
+
+                                    // Open body on first row
+                                    if (idx === 0) {
+                                        r2body.style.transition = 'none';
+                                        r2body.style.maxHeight = '0';
+                                        r2body.style.opacity = '0';
+                                        requestAnimationFrame(() => requestAnimationFrame(() => {
+                                            r2body.style.transition = 'max-height 420ms cubic-bezier(0.22,1,0.36,1), opacity 300ms ease';
+                                            r2body.style.maxHeight = '1200px';
+                                            r2body.style.opacity = '1';
+                                        }));
+                                    }
+
                                     if (scrollEl) scrollEl.scrollTop = scrollEl.scrollHeight;
                                 }
 
@@ -1481,32 +1574,27 @@
                                 }
 
                                 const doneDelay = cumDelay + 350;
-                                setTimeout(() => {
-                                    addRow(6);
-                                }, doneDelay);
+                                setTimeout(() => { addRow(6); }, doneDelay);
 
                                 setTimeout(() => {
-                                    const header = block.querySelector('.reasoning-block-header');
-                                    const workingText = block.querySelector('.reasoning-working-text');
-                                    if (header) header.classList.add('is-done');
-                                    if (workingText) workingText.textContent = 'Show work';
+                                    // Transition to "Show work" state
+                                    r2shimmer.className = 'r2-trigger-label';
+                                    r2shimmer.textContent = 'Show work';
+                                    block.classList.add('r2-done');
+                                    r2trigger.setAttribute('tabindex', '0');
                                     wireReasoningToggle(block, scrollEl);
 
                                     if (scrollEl) {
                                         const answerEl = buildAnswerBlock();
                                         scrollEl.appendChild(answerEl);
 
-                                        // Answer has loaded → collapse the reasoning steps.
                                         setReasoningCollapsed(block, true, true);
 
-                                        // Once the collapse settles, reveal the answer and
-                                        // bring it into view below the title bar.
                                         window.setTimeout(() => {
                                             answerEl.style.opacity = '1';
                                             answerEl.style.transform = 'translateY(0)';
                                             const inset = answerBarInset();
                                             const sRect = scrollEl.getBoundingClientRect();
-                                            // Scroll so 'Show work' sits 24px below the answer title bar.
                                             const blockRect = block.getBoundingClientRect();
                                             const targetScrollTop = (blockRect.top - sRect.top + scrollEl.scrollTop) - inset - 24;
                                             const maxScroll = scrollEl.scrollHeight - scrollEl.clientHeight;
@@ -1524,9 +1612,9 @@
                                 }, doneDelay + 100);
                             }, 3250);
                         }
-                    }, 250);
-                }, 250);
-            }, 250);
+                    }, 300);
+                }, 300);
+            }, 300);
         }, DURATION);
     }
 

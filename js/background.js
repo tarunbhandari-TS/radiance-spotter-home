@@ -53,10 +53,20 @@
         speed: { light: "1.72", dark: "1.58" }
     };
 
+    let motionFrozen = false;
+
     const drivers = {};
 
     function registerDriver(name, driver) {
         drivers[name] = driver;
+    }
+
+    function freezeMotion(frozen) {
+        motionFrozen = frozen;
+        document.querySelectorAll('.radiance-local').forEach(el => {
+            if (frozen) el.dataset.radianceMotion = 'still';
+            else delete el.dataset.radianceMotion;
+        });
     }
 
     function isFocusVariation(variationName) {
@@ -92,6 +102,7 @@
             delete surface.dataset.radianceMotion;
         });
 
+        if (motionFrozen) surfaces.forEach(s => s.dataset.radianceMotion = 'still');
         window.RadianceLanguageRenderer?.refresh?.();
     }
 
@@ -168,6 +179,7 @@
         setTheme,
         setQueryFocus,
         isFocusVariation,
+        freezeMotion,
         get activeVariation() { return activeVariation; }
     };
 

@@ -7,7 +7,7 @@
     <meta name="description" content="Standalone Radiance Home surface for ThoughtSpot.">
     <link rel="icon" type="image/png" href="assets/thoughtspot-favicon.png">
     <link rel="apple-touch-icon" href="assets/thoughtspot-apple-touch-icon.png">
-    <link rel="stylesheet" href="styles.css?v=20260622-clean">
+    <link rel="stylesheet" href="styles.css?v=20260626-r2">
     <link rel="stylesheet" href="css/background.css?v=20260622-clean">
 </head>
 <body>
@@ -328,14 +328,15 @@
         <div class="exploration-section">
             <p>Submit flow</p>
             <div class="flow-switch" id="flow-switch" role="radiogroup" aria-label="Submit flow option">
-                <button class="flow-option is-selected" type="button" data-flow="option1" role="radio" aria-checked="true">Option 1</button>
-                <button class="flow-option" type="button" data-flow="option2" role="radio" aria-checked="false">Option 2</button>
-                <button class="flow-option" type="button" data-flow="option3" role="radio" aria-checked="false">Option 3</button>
+                <button class="flow-option is-selected" type="button" data-flow="option3" role="radio" aria-checked="true">Option 3</button>
             </div>
         </div>
 
         <div class="exploration-section">
-            <p>Gradient background</p>
+            <button class="menu-item menu-item-toggle" id="bg-visible-toggle" type="button" role="menuitemcheckbox" aria-checked="true">
+                <span class="menu-item-label">Gradient background</span>
+                <img class="menu-item-switch" src="assets/menu/toggle-on.svg" alt="" aria-hidden="true">
+            </button>
             <label class="slider-row">
                 <span>Opacity <em id="bg-opacity-val">100%</em></span>
                 <input type="range" id="bg-opacity" min="0" max="100" step="1" value="100" aria-label="Background opacity">
