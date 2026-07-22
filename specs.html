@@ -1,0 +1,720 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Specifications - Radiance</title>
+    <meta name="description" content="Interaction specifications for the Radiance Home surface.">
+    <link rel="icon" type="image/png" href="assets/thoughtspot-favicon.png">
+    <link rel="apple-touch-icon" href="assets/thoughtspot-apple-touch-icon.png">
+    <link rel="stylesheet" href="styles.css?v=20260626-r2">
+</head>
+<body>
+    <div class="specs-shell">
+        <header class="specs-topbar">
+            <svg class="brand-mark" aria-label="ThoughtSpot" fill="none" preserveAspectRatio="xMidYMid meet" role="img" viewBox="0 0 24 24">
+                <path d="M23.7108 0H0V4.39156H23.7108V0Z" fill="currentColor"></path>
+                <path d="M23.7108 5.8554H14.7018V10.247H23.7108V5.8554Z" fill="currentColor"></path>
+                <path d="M5.75601 5.8554H0V10.247H5.75601C7.90661 10.247 9.65962 12 9.65962 14.1506V23.7108H14.0512V14.1506C14.0512 9.57829 10.3283 5.8554 5.75601 5.8554Z" fill="currentColor"></path>
+                <path d="M19.2108 16.6265C17.1777 16.6265 15.5241 18.2801 15.5241 20.3133C15.5241 22.3464 17.1777 24 19.2108 24C21.2439 24 22.8976 22.3464 22.8976 20.3133C22.8976 18.2801 21.2439 16.6265 19.2108 16.6265Z" fill="currentColor"></path>
+            </svg>
+            <h1 class="specs-topbar-title">Specifications</h1>
+            <span class="specs-topbar-sub">Radiance Home — interaction library</span>
+        </header>
+
+        <div class="specs-body">
+            <nav class="specs-nav" aria-label="Component list">
+                <p class="specs-nav-heading">Components</p>
+                <button class="specs-nav-item is-active" type="button" data-panel="wiggle">Empty prompt box wiggle</button>
+                <button class="specs-nav-item" type="button" data-panel="menu">Menu expansion transition</button>
+                <button class="specs-nav-item" type="button" data-panel="bgfade">BG fadeout</button>
+                <button class="specs-nav-item" type="button" data-panel="loader">Loader (Warming up)</button>
+            </nav>
+
+            <main class="specs-content">
+                <!-- Empty prompt box wiggle -->
+                <section class="specs-panel is-active" id="panel-wiggle">
+                    <h2 class="specs-panel-title">Empty prompt box wiggle</h2>
+                    <p class="specs-panel-desc">
+                        When the send (blue) button is clicked while the prompt box is empty, the box performs a
+                        short horizontal shake to signal that input is required. Click the button below to preview
+                        the exact motion used on the Home surface.
+                    </p>
+
+                    <p class="specs-section-label">Preview</p>
+                    <div class="specs-demo-stage">
+                        <form class="prompt-bar wiggle-demo-prompt" onsubmit="return false;">
+                            <div class="prompt-bar-card" id="wiggle-box">
+                                <div class="prompt-bar-input">
+                                    <textarea rows="1" spellcheck="false" placeholder="Press &lsquo;/&rsquo; for skills and &lsquo;@&rsquo; to add context" readonly></textarea>
+                                </div>
+                                <div class="prompt-bar-actions">
+                                    <div class="prompt-bar-left">
+                                        <button class="prompt-icon-button" type="button" aria-label="Add context" tabindex="-1">
+                                            <span class="plus-symbol" aria-hidden="true"></span>
+                                        </button>
+                                        <button class="prompt-model-button" type="button" aria-label="All data models" tabindex="-1">
+                                            <span>All data models</span>
+                                            <span class="chevron-icon" aria-hidden="true"></span>
+                                        </button>
+                                    </div>
+                                    <div class="prompt-bar-right">
+                                        <button class="prompt-send-button" type="button" aria-label="Send query" tabindex="-1">
+                                            <span class="send-icon" aria-hidden="true"></span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                        <button class="specs-demo-button" id="wiggle-trigger" type="button">Trigger wiggle</button>
+                    </div>
+
+                    <p class="specs-section-label">Animation</p>
+                    <div class="specs-code-block">
+                        <button class="specs-code-copy" type="button" data-copy="code-wiggle-keyframes">Copy</button>
+<pre id="code-wiggle-keyframes"><span class="tok-com">/* Horizontal shake when send is clicked with an empty prompt. */</span>
+<span class="tok-key">@keyframes</span> <span class="tok-prop">prompt-wiggle</span> {
+  <span class="tok-num">0%</span>   { <span class="tok-prop">transform</span>: <span class="tok-val">translateX(0)</span>; }
+  <span class="tok-num">15%</span>  { <span class="tok-prop">transform</span>: <span class="tok-val">translateX(-6px)</span>; }
+  <span class="tok-num">30%</span>  { <span class="tok-prop">transform</span>: <span class="tok-val">translateX(5px)</span>; }
+  <span class="tok-num">45%</span>  { <span class="tok-prop">transform</span>: <span class="tok-val">translateX(-4px)</span>; }
+  <span class="tok-num">60%</span>  { <span class="tok-prop">transform</span>: <span class="tok-val">translateX(3px)</span>; }
+  <span class="tok-num">75%</span>  { <span class="tok-prop">transform</span>: <span class="tok-val">translateX(-2px)</span>; }
+  <span class="tok-num">100%</span> { <span class="tok-prop">transform</span>: <span class="tok-val">translateX(0)</span>; }
+}
+
+<span class="tok-prop">.prompt-bar-card</span><span class="tok-prop">.is-wiggling</span> {
+  <span class="tok-prop">animation</span>: <span class="tok-val">prompt-wiggle 360ms cubic-bezier(0.36, 0.07, 0.19, 0.97)</span>;
+}</pre>
+                    </div>
+
+                    <p class="specs-section-label">Trigger logic</p>
+                    <div class="specs-code-block">
+                        <button class="specs-code-copy" type="button" data-copy="code-wiggle-js">Copy</button>
+<pre id="code-wiggle-js"><span class="tok-key">function</span> <span class="tok-prop">wigglePromptBar</span>() {
+  <span class="tok-key">const</span> card = document.<span class="tok-prop">querySelector</span>(<span class="tok-val">".prompt-bar-card"</span>);
+  <span class="tok-key">if</span> (!card) <span class="tok-key">return</span>;
+  card.classList.<span class="tok-prop">remove</span>(<span class="tok-val">"is-wiggling"</span>);
+  <span class="tok-com">// Force reflow so the animation retriggers on rapid clicks.</span>
+  <span class="tok-key">void</span> card.offsetWidth;
+  card.classList.<span class="tok-prop">add</span>(<span class="tok-val">"is-wiggling"</span>);
+  card.<span class="tok-prop">addEventListener</span>(<span class="tok-val">"animationend"</span>,
+    () =&gt; card.classList.<span class="tok-prop">remove</span>(<span class="tok-val">"is-wiggling"</span>),
+    { <span class="tok-prop">once</span>: <span class="tok-key">true</span> });
+}
+
+<span class="tok-com">// Called when the send button is pressed with no text.</span>
+<span class="tok-key">if</span> (!askInput.value.<span class="tok-prop">trim</span>()) {
+  <span class="tok-prop">wigglePromptBar</span>();
+  askInput.<span class="tok-prop">focus</span>();
+}</pre>
+                    </div>
+
+                    <p class="specs-section-label">Properties</p>
+                    <table class="specs-prop-table">
+                        <thead>
+                            <tr><th>Property</th><th>Value</th><th>Notes</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Duration</td><td>360ms</td><td>Full shake settles within a single pass.</td></tr>
+                            <tr><td>Easing</td><td>cubic-bezier(0.36, 0.07, 0.19, 0.97)</td><td>Sharp start, damped tail.</td></tr>
+                            <tr><td>Axis</td><td>translateX</td><td>Horizontal only; no rotation or scale.</td></tr>
+                            <tr><td>Amplitude</td><td>6px → 0px</td><td>Decays −6, 5, −4, 3, −2 across keyframes.</td></tr>
+                            <tr><td>Iterations</td><td>1</td><td>Plays once per trigger; re-armed via reflow.</td></tr>
+                            <tr><td>Trigger</td><td>empty submit</td><td>Send clicked while input is blank.</td></tr>
+                            <tr><td>Reduced motion</td><td>animation: none</td><td>Disabled under prefers-reduced-motion.</td></tr>
+                        </tbody>
+                    </table>
+                </section>
+
+                <!-- Menu expansion transition -->
+                <section class="specs-panel" id="panel-menu">
+                    <h2 class="specs-panel-title">Menu expansion transition</h2>
+                    <p class="specs-panel-desc">
+                        The <strong>Quick search</strong> and <strong>Deep analysis</strong> starter chips expand
+                        in place into a suggestion card. The card grows from the chip's exact footprint, the
+                        pill corners square off, the suggestion list fades in, and a blur overlay settles over the
+                        dashboard panels behind it. Click a chip to preview; click the ✕ or outside to collapse.
+                    </p>
+
+                    <p class="specs-section-label">Preview</p>
+                    <div class="mx-stage" id="mx-stage">
+                        <div class="mx-chips">
+                            <button class="starter-prompt-chip" id="mx-qs-chip" type="button" aria-expanded="false">
+                                <img class="starter-prompt-icon" src="assets/icon-quick-search.svg" alt="" aria-hidden="true">
+                                <span>Quick search</span>
+                            </button>
+                            <button class="starter-prompt-chip" id="mx-da-chip" type="button" aria-expanded="false">
+                                <img class="starter-prompt-icon" src="assets/icon-deep-analysis.svg" alt="" aria-hidden="true">
+                                <span>Deep analysis</span>
+                            </button>
+                        </div>
+
+                        <!-- Faux dashboard content behind the blur -->
+                        <div class="mx-panels" aria-hidden="true">
+                            <div class="mx-panel-card">
+                                <h4>Recents</h4>
+                                <div class="mx-panel-row"><span>Quarterly profit dashboard</span><span>Today</span></div>
+                                <div class="mx-panel-row"><span>Customer attrition by team</span><span>Yesterday</span></div>
+                                <div class="mx-panel-row"><span>New leads by channel</span><span>2 days ago</span></div>
+                            </div>
+                            <div class="mx-panel-card">
+                                <h4>Watchlist</h4>
+                                <div class="mx-panel-row"><span>Total Revenue</span><span>88.8M</span></div>
+                                <div class="mx-panel-row"><span>Sessions</span><span>10.07M</span></div>
+                                <div class="mx-panel-row"><span>Conversion Rate</span><span>6.3%</span></div>
+                            </div>
+                        </div>
+
+                        <div class="mx-blur" id="mx-blur"></div>
+
+                        <!-- Quick search card -->
+                        <div class="mx-card" id="mx-qs-card" hidden role="dialog" aria-label="Quick search suggestions">
+                            <div class="mx-header" id="mx-qs-header">
+                                <div class="qs-header-left">
+                                    <img class="qs-icon" src="assets/icon-quick-search.svg" alt="" aria-hidden="true">
+                                    <span class="qs-label">Quick search</span>
+                                </div>
+                                <button class="mx-close" id="mx-qs-close" type="button" aria-label="Close quick search">
+                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                                        <path d="M12 4L4 12M4 4l8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="mx-prompts">
+                                <button class="qs-prompt" type="button">What was total revenue last month?</button>
+                                <button class="qs-prompt" type="button">Show me top 10 products by sales this quarter.</button>
+                                <button class="qs-prompt" type="button">How do sales this year compare to last year?</button>
+                                <button class="qs-prompt" type="button">Which region had the highest growth last quarter?</button>
+                            </div>
+                        </div>
+
+                        <!-- Deep analysis card -->
+                        <div class="mx-card" id="mx-da-card" hidden role="dialog" aria-label="Deep analysis suggestions">
+                            <div class="mx-header" id="mx-da-header">
+                                <div class="qs-header-left">
+                                    <img class="qs-icon" src="assets/icon-deep-analysis.svg" alt="" aria-hidden="true">
+                                    <span class="qs-label">Deep analysis</span>
+                                </div>
+                                <button class="mx-close" id="mx-da-close" type="button" aria-label="Close deep analysis">
+                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                                        <path d="M12 4L4 12M4 4l8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="mx-prompts">
+                                <button class="qs-prompt" type="button">Generate report on sales trends last year</button>
+                                <button class="qs-prompt" type="button">Product categories that drove maximum growth</button>
+                                <button class="qs-prompt" type="button">Find anomalies in my sales and suggest recommendations</button>
+                                <button class="qs-prompt" type="button">Compare my sales to market trends and identify trends</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p class="specs-section-label">Blur overlay</p>
+                    <div class="specs-code-block">
+                        <button class="specs-code-copy" type="button" data-copy="code-menu-blur">Copy</button>
+<pre id="code-menu-blur"><span class="tok-com">/* Sits below the starter chips; top/left set by JS at open. */</span>
+<span class="tok-prop">.panels-blur-overlay</span> {
+  <span class="tok-prop">position</span>: <span class="tok-val">fixed</span>;
+  <span class="tok-prop">right</span>: <span class="tok-num">0</span>;
+  <span class="tok-prop">bottom</span>: <span class="tok-num">0</span>;
+  <span class="tok-prop">z-index</span>: <span class="tok-num">98</span>;
+  <span class="tok-prop">pointer-events</span>: <span class="tok-val">none</span>;
+  <span class="tok-prop">backdrop-filter</span>: <span class="tok-val">blur(8.7px)</span>;
+  <span class="tok-prop">-webkit-backdrop-filter</span>: <span class="tok-val">blur(8.7px)</span>;
+  <span class="tok-prop">background</span>: <span class="tok-val">transparent</span>;
+  <span class="tok-prop">opacity</span>: <span class="tok-num">0</span>;
+  <span class="tok-prop">transition</span>: <span class="tok-val">opacity 300ms ease</span>;
+}
+
+<span class="tok-prop">.panels-blur-overlay</span><span class="tok-prop">.is-active</span> {
+  <span class="tok-prop">opacity</span>: <span class="tok-num">1</span>;
+}</pre>
+                    </div>
+
+                    <p class="specs-section-label">Expansion &amp; collapse transition</p>
+                    <div class="specs-code-block">
+                        <button class="specs-code-copy" type="button" data-copy="code-menu-card">Copy</button>
+<pre id="code-menu-card"><span class="tok-com">/* Card animates from the chip footprint to the expanded card. */</span>
+<span class="tok-prop">.qs-card</span> {
+  <span class="tok-prop">position</span>: <span class="tok-val">fixed</span>;      <span class="tok-com">/* left/top/width/height set by JS */</span>
+  <span class="tok-prop">z-index</span>: <span class="tok-num">9999</span>;
+  <span class="tok-prop">border-radius</span>: <span class="tok-val">40px</span>;   <span class="tok-com">/* matches chip pill, squares to 12px */</span>
+  <span class="tok-prop">overflow</span>: <span class="tok-val">hidden</span>;
+  <span class="tok-prop">transition</span>:
+    <span class="tok-val">left 260ms cubic-bezier(0.4, 0, 0.2, 1)</span>,
+    <span class="tok-val">width 260ms cubic-bezier(0.4, 0, 0.2, 1)</span>,
+    <span class="tok-val">max-height 260ms cubic-bezier(0.4, 0, 0.2, 1)</span>,
+    <span class="tok-val">border-radius 260ms cubic-bezier(0.4, 0, 0.2, 1)</span>;
+}
+
+<span class="tok-prop">.qs-card.is-expanded</span> { <span class="tok-prop">border-radius</span>: <span class="tok-val">12px</span>; }
+
+<span class="tok-com">/* Suggestion list — fades + slides up, staggered after the box. */</span>
+<span class="tok-prop">.qs-prompts</span> {
+  <span class="tok-prop">opacity</span>: <span class="tok-num">0</span>;
+  <span class="tok-prop">transform</span>: <span class="tok-val">translateY(4px)</span>;
+  <span class="tok-prop">transition</span>: <span class="tok-val">opacity 180ms ease 180ms, transform 180ms ease 180ms</span>;
+}
+<span class="tok-prop">.qs-card.is-expanded .qs-prompts</span> {
+  <span class="tok-prop">opacity</span>: <span class="tok-num">1</span>;
+  <span class="tok-prop">transform</span>: <span class="tok-val">translateY(0)</span>;
+}
+
+<span class="tok-com">/* Close button reveals after the box settles. */</span>
+<span class="tok-prop">.qs-close</span> {
+  <span class="tok-prop">opacity</span>: <span class="tok-num">0</span>;
+  <span class="tok-prop">transition</span>: <span class="tok-val">opacity 160ms ease 160ms, background 120ms ease</span>;
+}
+<span class="tok-prop">.qs-card.is-expanded .qs-close</span> { <span class="tok-prop">opacity</span>: <span class="tok-num">1</span>; }</pre>
+                    </div>
+
+                    <p class="specs-section-label">Trigger logic</p>
+                    <div class="specs-code-block">
+                        <button class="specs-code-copy" type="button" data-copy="code-menu-js">Copy</button>
+<pre id="code-menu-js"><span class="tok-key">function</span> <span class="tok-prop">openStarterCard</span>(chip, card, header) {
+  <span class="tok-key">const</span> chipRect = chip.<span class="tok-prop">getBoundingClientRect</span>();
+  <span class="tok-key">const</span> expandedWidth = <span class="tok-num">660</span>;
+  <span class="tok-key">const</span> expandedLeft = cardRect.left + (cardRect.width - expandedWidth) / <span class="tok-num">2</span>;
+
+  <span class="tok-com">// 1. Start the card exactly on top of the chip.</span>
+  card.style.left = <span class="tok-val">`${chipRect.left}px`</span>;
+  card.style.top = <span class="tok-val">`${chipRect.top}px`</span>;
+  card.style.width = <span class="tok-val">`${chipRect.width}px`</span>;
+  card.style.maxHeight = <span class="tok-val">`${chipRect.height}px`</span>;
+  header.style.height = <span class="tok-val">`${chipRect.height}px`</span>;
+
+  card.hidden = <span class="tok-key">false</span>;
+  chip.style.opacity = <span class="tok-val">'0'</span>;              <span class="tok-com">// hide chip under card</span>
+  chip.<span class="tok-prop">setAttribute</span>(<span class="tok-val">'aria-expanded'</span>, <span class="tok-val">'true'</span>);
+  panelsBlur.classList.<span class="tok-prop">add</span>(<span class="tok-val">'is-active'</span>);   <span class="tok-com">// fade blur in</span>
+
+  <span class="tok-com">// 2. Next frame, flip to the expanded geometry → transitions run.</span>
+  <span class="tok-prop">requestAnimationFrame</span>(() =&gt; <span class="tok-prop">requestAnimationFrame</span>(() =&gt; {
+    card.classList.<span class="tok-prop">add</span>(<span class="tok-val">'is-expanded'</span>);
+    card.style.left = <span class="tok-val">`${expandedLeft}px`</span>;
+    card.style.width = <span class="tok-val">'660px'</span>;
+    card.style.maxHeight = <span class="tok-val">'320px'</span>;
+  }));
+}
+
+<span class="tok-key">function</span> <span class="tok-prop">closeStarterCard</span>(chip, card) {
+  <span class="tok-key">const</span> chipRect = chip.<span class="tok-prop">getBoundingClientRect</span>();
+  card.classList.<span class="tok-prop">remove</span>(<span class="tok-val">'is-expanded'</span>);   <span class="tok-com">// reverse to chip footprint</span>
+  card.style.left = <span class="tok-val">`${chipRect.left}px`</span>;
+  card.style.width = <span class="tok-val">`${chipRect.width}px`</span>;
+  card.style.maxHeight = <span class="tok-val">`${chipRect.height}px`</span>;
+  panelsBlur.classList.<span class="tok-prop">remove</span>(<span class="tok-val">'is-active'</span>);
+  card.<span class="tok-prop">addEventListener</span>(<span class="tok-val">'transitionend'</span>, () =&gt; {
+    card.hidden = <span class="tok-key">true</span>;
+    chip.style.opacity = <span class="tok-val">''</span>;              <span class="tok-com">// restore chip</span>
+  }, { <span class="tok-prop">once</span>: <span class="tok-key">true</span> });
+}</pre>
+                    </div>
+
+                    <p class="specs-section-label">Properties</p>
+                    <table class="specs-prop-table">
+                        <thead>
+                            <tr><th>Property</th><th>Value</th><th>Notes</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Card duration</td><td>260ms</td><td>left, width, max-height, border-radius.</td></tr>
+                            <tr><td>Card easing</td><td>cubic-bezier(0.4, 0, 0.2, 1)</td><td>Standard material ease.</td></tr>
+                            <tr><td>Corner radius</td><td>40px → 12px</td><td>Pill squares off as it expands.</td></tr>
+                            <tr><td>Expanded size</td><td>660 × 320px</td><td>Width fixed; height caps via max-height.</td></tr>
+                            <tr><td>Blur amount</td><td>backdrop-filter: blur(8.7px)</td><td>Applied to panels behind the card.</td></tr>
+                            <tr><td>Blur fade</td><td>opacity 300ms ease</td><td>0 → 1 on open, 1 → 0 on close.</td></tr>
+                            <tr><td>Blur z-index</td><td>98</td><td>Above panels, below the card (9999).</td></tr>
+                            <tr><td>List reveal</td><td>opacity + transform 180ms ease, 180ms delay</td><td>translateY(4px) → 0, staggered.</td></tr>
+                            <tr><td>Close button</td><td>opacity 160ms ease, 160ms delay</td><td>Appears after the box settles.</td></tr>
+                            <tr><td>Technique</td><td>FLIP</td><td>Starts at chip rect, flips to expanded on next frame.</td></tr>
+                            <tr><td>Dismiss</td><td>✕ / outside click</td><td>Clicks inside the prompt box keep it open.</td></tr>
+                        </tbody>
+                    </table>
+                </section>
+
+                <!-- Loader (Warming up) -->
+                <section class="specs-panel" id="panel-loader">
+                    <h2 class="specs-panel-title">Loader (Warming up)</h2>
+                    <p class="specs-panel-desc">
+                        The loading state shown while Spotter reasons on a query.
+                    </p>
+
+                    <div class="specs-callout">
+                        <strong>Recommendation</strong>
+                        <span>
+                            Do <em>not</em> use the literal &ldquo;Warming up Spotter&rdquo; text loader.
+                            Instead, use the <strong>moving gradient background</strong> — the same radiance
+                            wash documented in <a href="#" data-goto="bgfade">BG fadeout</a> — as the loading
+                            indicator. The drifting gradient communicates &ldquo;thinking&rdquo; ambiently, without a
+                            literal label, and it transitions seamlessly into the answer state via the background
+                            fade-out (translateY&nbsp;−500px, opacity&nbsp;→&nbsp;0, 5000ms ease-out).
+                        </span>
+                    </div>
+                </section>
+
+                <!-- BG fadeout -->
+                <section class="specs-panel" id="panel-bgfade">
+                    <h2 class="specs-panel-title">BG fadeout</h2>
+                    <p class="specs-panel-desc">
+                        The radiance wash lives at the top of the surface and drifts continuously. When an
+                        answer loads, the whole background <strong>fades up and out</strong> — it translates
+                        toward the top while its opacity falls to zero, clearing the canvas for the answer.
+                        Press <strong>Play</strong> to watch the chronological flow: question&nbsp;→ reasoning&nbsp;→ answer,
+                        with the fade-out firing as the answer settles.
+                    </p>
+
+                    <p class="specs-section-label">Preview</p>
+                    <div class="bg-demo-stage">
+                        <div class="bg-demo-screen">
+                            <div class="bg-demo-radiance" id="bg-demo-radiance">
+                                <div class="radiance-local"
+                                    data-radiance-appearance="dark"
+                                    data-radiance-variant="dynamic-subtle"
+                                    data-radiance-intensity="subtle"
+                                    data-radiance-dark-glow="subtle"
+                                    data-radiance-layout="top-wash"
+                                    data-radiance-speed="1.72"></div>
+                            </div>
+                            <div class="bg-demo-content">
+                                <div class="bg-demo-topbar">
+                                    <span class="bg-demo-dot"></span>
+                                    <span>Spotter</span>
+                                </div>
+                                <div class="bg-demo-flow">
+                                    <div class="bg-demo-step bg-demo-bubble" id="bg-step-q">What was total revenue last month?</div>
+                                    <div class="bg-demo-step bg-demo-reasoning" id="bg-step-r">
+                                        <span class="bg-demo-spinner"></span>
+                                        <span class="bg-demo-reasoning-text">Warming up…</span>
+                                    </div>
+                                    <div class="bg-demo-step bg-demo-answer" id="bg-step-a">
+                                        <span class="bg-demo-answer-title">Revenue by month</span>
+                                        <div class="bg-demo-chart">
+                                            <span class="bg-demo-bar" style="height:38%"></span>
+                                            <span class="bg-demo-bar" style="height:56%"></span>
+                                            <span class="bg-demo-bar" style="height:44%"></span>
+                                            <span class="bg-demo-bar" style="height:72%"></span>
+                                            <span class="bg-demo-bar" style="height:60%"></span>
+                                            <span class="bg-demo-bar" style="height:88%"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="bg-demo-steplabel" id="bg-demo-steplabel">Press <strong>Play</strong> to run the sequence</p>
+                        <button class="specs-demo-button" id="bg-demo-play" type="button">Play sequence</button>
+                    </div>
+
+                    <p class="specs-section-label">Background structure &amp; position</p>
+                    <div class="specs-code-block">
+                        <button class="specs-code-copy" type="button" data-copy="code-bg-structure">Copy</button>
+<pre id="code-bg-structure"><span class="tok-com">/* Full-viewport fixed canvas layer — sits behind all UI. */</span>
+<span class="tok-prop">#background-root</span> {
+  <span class="tok-prop">position</span>: <span class="tok-val">fixed</span>;
+  <span class="tok-prop">inset</span>: <span class="tok-num">0</span>;
+  <span class="tok-prop">z-index</span>: <span class="tok-num">0</span>;
+  <span class="tok-prop">overflow</span>: <span class="tok-val">hidden</span>;
+  <span class="tok-prop">pointer-events</span>: <span class="tok-val">none</span>;
+}
+
+<span class="tok-com">/* Radiance wash — concentrated at the top, masked to fade downward. */</span>
+<span class="tok-prop">html[data-theme="dark"][data-home-variation="top-wash"] .home-radiance</span> {
+  <span class="tok-prop">position</span>: <span class="tok-val">absolute</span>;
+  <span class="tok-prop">inset</span>: <span class="tok-num">0</span>;
+  <span class="tok-prop">opacity</span>: <span class="tok-num">0.66</span>;
+  <span class="tok-prop">mask-image</span>: <span class="tok-val">linear-gradient(to bottom,
+      #000 0%, rgba(0,0,0,0.86) 20%, rgba(0,0,0,0.42) 48%,
+      rgba(0,0,0,0.12) 70%, transparent 90%)</span>;
+}</pre>
+                    </div>
+
+                    <p class="specs-section-label">Fade-out on answer load</p>
+                    <div class="specs-code-block">
+                        <button class="specs-code-copy" type="button" data-copy="code-bg-fade">Copy</button>
+<pre id="code-bg-fade"><span class="tok-com">// Fires ~530ms after the answer chart fades in</span>
+<span class="tok-com">// (480ms answer scroll + 50ms).</span>
+<span class="tok-prop">setTimeout</span>(() =&gt; {
+  <span class="tok-prop">animateBgTo</span>(<span class="tok-num">-500</span>, <span class="tok-num">0</span>, <span class="tok-num">5000</span>);  <span class="tok-com">// y = -500px, opacity 0%, over 5000ms</span>
+}, <span class="tok-num">480</span> + <span class="tok-num">50</span>);
+
+<span class="tok-key">function</span> <span class="tok-prop">animateBgTo</span>(y, opacityPct, ms) {
+  <span class="tok-key">const</span> easing = <span class="tok-val">`${ms}ms cubic-bezier(0.0, 0.0, 0.2, 1)`</span>; <span class="tok-com">// ease-out</span>
+  bgRoot.style.transition = <span class="tok-val">`opacity ${easing}, transform ${easing}`</span>;
+
+  <span class="tok-com">// Overlay ::before/::after fade instantly (0ms) so they don't</span>
+  <span class="tok-com">// lag the canvas as it moves and reveal a double gradient.</span>
+  root.style.<span class="tok-prop">setProperty</span>(<span class="tok-val">'--bg-anim-duration'</span>, <span class="tok-val">'0ms'</span>);
+  homeMain.style.<span class="tok-prop">setProperty</span>(<span class="tok-val">'--bg-overlay-opacity'</span>, opacityPct / <span class="tok-num">100</span>);
+  root.style.<span class="tok-prop">setProperty</span>(<span class="tok-val">'--bg-anim-duration'</span>, <span class="tok-val">`${ms}ms`</span>);
+
+  bgRoot.style.transform = <span class="tok-val">`translateY(${y}px)`</span>;  <span class="tok-com">// drifts up → toward top</span>
+  bgRoot.style.opacity   = opacityPct / <span class="tok-num">100</span>;       <span class="tok-com">// → 0</span>
+}</pre>
+                    </div>
+
+                    <p class="specs-section-label">Related: query-focus cross-fade</p>
+                    <div class="specs-code-block">
+                        <button class="specs-code-copy" type="button" data-copy="code-bg-focus">Copy</button>
+<pre id="code-bg-focus"><span class="tok-com">/* A separate, faster fade when the prompt gains focus on submit. */</span>
+<span class="tok-prop">html[data-query-effect="top-focus"] .home-radiance</span> {
+  <span class="tok-prop">transition</span>: <span class="tok-val">opacity 780ms cubic-bezier(0.16, 1, 0.3, 1)</span>;
+  <span class="tok-prop">will-change</span>: <span class="tok-val">opacity</span>;
+}
+<span class="tok-prop">html[data-query-effect="top-focus"][data-query-focus="true"] .home-radiance</span> {
+  <span class="tok-prop">opacity</span>: <span class="tok-num">0</span>;
+}</pre>
+                    </div>
+
+                    <p class="specs-section-label">Chronological timeline</p>
+                    <div class="specs-code-block">
+                        <button class="specs-code-copy" type="button" data-copy="code-bg-timeline">Copy</button>
+<pre id="code-bg-timeline"><span class="tok-num">0ms</span>        <span class="tok-key">Question submitted</span> — prompt snaps to the top
+<span class="tok-num">0–3250ms</span>   <span class="tok-key">Reasoning</span> — "Warming up" loader + reasoning block
+<span class="tok-num">+320ms</span>     <span class="tok-key">Answer</span> block fades in (after reasoning collapses)
+<span class="tok-num">+530ms</span>     <span class="tok-key">Background fade begins</span>:
+           transform  translateY(0 → -500px)
+           opacity    1 → 0
+           duration   5000ms  ·  cubic-bezier(0.0, 0.0, 0.2, 1)</pre>
+                    </div>
+
+                    <p class="specs-section-label">Properties</p>
+                    <table class="specs-prop-table">
+                        <thead>
+                            <tr><th>Property</th><th>Value</th><th>Notes</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Target</td><td>#background-root</td><td>Fixed, inset 0, z-index 0 canvas layer.</td></tr>
+                            <tr><td>Trigger</td><td>answer visible + 530ms</td><td>480ms answer scroll + 50ms.</td></tr>
+                            <tr><td>Duration</td><td>5000ms</td><td>Long, ambient settle.</td></tr>
+                            <tr><td>Easing</td><td>cubic-bezier(0.0, 0.0, 0.2, 1)</td><td>ease-out.</td></tr>
+                            <tr><td>Transform</td><td>translateY(0 → -500px)</td><td>Drifts up — fades toward the top.</td></tr>
+                            <tr><td>Opacity</td><td>1 → 0</td><td>Canvas fades out completely.</td></tr>
+                            <tr><td>Overlay sync</td><td>--bg-anim-duration 0ms</td><td>::before/::after snap so no gradient lag.</td></tr>
+                            <tr><td>Wash mask</td><td>linear-gradient → transparent 90%</td><td>Top-concentrated; fades downward.</td></tr>
+                            <tr><td>Base opacity (dark)</td><td>0.66</td><td>top-wash dark .home-radiance.</td></tr>
+                            <tr><td>Motion speed (dark)</td><td>1.72</td><td>Renderer data-radiance-speed.</td></tr>
+                            <tr><td>Related fade</td><td>780ms · cubic-bezier(0.16, 1, 0.3, 1)</td><td>query-focus cross-fade on submit.</td></tr>
+                        </tbody>
+                    </table>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <!-- Preview / Specifications segment control -->
+    <div class="mode-segment" role="tablist" aria-label="View mode">
+        <button class="mode-segment-option" type="button" role="tab" aria-selected="false" data-href="index.html">Preview</button>
+        <button class="mode-segment-option is-active" type="button" role="tab" aria-selected="true">Specifications</button>
+    </div>
+
+    <!-- Real radiance renderer — drives the live background in the BG fadeout demo. -->
+    <script src="js/radiance-renderer.js"></script>
+    <script>
+        // Segment control navigation.
+        document.querySelectorAll('.mode-segment-option[data-href]').forEach((btn) => {
+            btn.addEventListener('click', () => { window.location.href = btn.dataset.href; });
+        });
+
+        // Left nav → panel switching.
+        const navItems = document.querySelectorAll('.specs-nav-item');
+        const panels = document.querySelectorAll('.specs-panel');
+        function showPanel(target) {
+            navItems.forEach((n) => n.classList.toggle('is-active', n.dataset.panel === target));
+            panels.forEach((p) => p.classList.toggle('is-active', p.id === 'panel-' + target));
+            document.querySelector('.specs-content').scrollTop = 0;
+            // Nudge the renderer so the now-visible radiance canvas picks up its size.
+            if (window.RadianceLanguageRenderer) window.RadianceLanguageRenderer.refresh();
+        }
+        navItems.forEach((item) => {
+            item.addEventListener('click', () => showPanel(item.dataset.panel));
+        });
+        // In-page cross-links (e.g. the Loader recommendation → BG fadeout).
+        document.querySelectorAll('[data-goto]').forEach((link) => {
+            link.addEventListener('click', (e) => { e.preventDefault(); showPanel(link.dataset.goto); });
+        });
+
+        // Wiggle demo — mirrors app.js wigglePromptBar().
+        const wiggleBox = document.getElementById('wiggle-box');
+        const wiggleTrigger = document.getElementById('wiggle-trigger');
+        wiggleTrigger.addEventListener('click', () => {
+            wiggleBox.classList.remove('is-wiggling');
+            void wiggleBox.offsetWidth; // reflow to re-arm the animation
+            wiggleBox.classList.add('is-wiggling');
+            wiggleBox.addEventListener('animationend',
+                () => wiggleBox.classList.remove('is-wiggling'),
+                { once: true });
+        });
+
+        // ── Menu expansion demo — scoped FLIP inside the stage ──
+        (function () {
+            const stage = document.getElementById('mx-stage');
+            if (!stage) return;
+            const blur = document.getElementById('mx-blur');
+
+            // Chip geometry relative to the stage's padding box (the card's
+            // offset parent). Using getBoundingClientRect avoids the offsetTop
+            // mismatch — the chip's offsetParent is .mx-chips, the card's is the
+            // stage, so raw chip.offsetTop drops the stage padding (28px).
+            function chipGeom(chip) {
+                const sr = stage.getBoundingClientRect();
+                const cs = getComputedStyle(stage);
+                const bl = parseFloat(cs.borderLeftWidth) || 0;
+                const bt = parseFloat(cs.borderTopWidth) || 0;
+                const r = chip.getBoundingClientRect();
+                return {
+                    left: r.left - sr.left - bl,
+                    top: r.top - sr.top - bt,
+                    width: r.width,
+                    height: r.height
+                };
+            }
+
+            function openCard(chip, card, header) {
+                // Close any other open card first.
+                stage.querySelectorAll('.mx-card:not([hidden])').forEach((c) => {
+                    if (c !== card) collapse(c);
+                });
+                if (card._collapseTimer) { clearTimeout(card._collapseTimer); card._collapseTimer = null; }
+
+                const cw = stage.clientWidth - 48; // stage padding = 24px each side
+                const expandedWidth = Math.min(660, cw);
+                const expandedLeft = (stage.clientWidth - expandedWidth) / 2;
+
+                // 1. Start on top of the chip (measured relative to the stage).
+                const g = chipGeom(chip);
+                card.style.left = g.left + 'px';
+                card.style.top = g.top + 'px';
+                card.style.width = g.width + 'px';
+                card.style.maxHeight = g.height + 'px';
+                header.style.height = g.height + 'px';
+
+                card.hidden = false;
+                chip.style.opacity = '0';
+                chip.style.pointerEvents = 'none';
+                chip.setAttribute('aria-expanded', 'true');
+                if (blur) blur.classList.add('is-active');
+
+                // 2. Next frame → flip to expanded geometry.
+                requestAnimationFrame(() => requestAnimationFrame(() => {
+                    card.classList.add('is-expanded');
+                    card.style.left = expandedLeft + 'px';
+                    card.style.width = expandedWidth + 'px';
+                    card.style.maxHeight = '320px';
+                }));
+            }
+
+            function collapse(card) {
+                const chip = document.querySelector('[aria-expanded="true"][data-card="' + card.id + '"]');
+                card.classList.remove('is-expanded');
+                if (chip) {
+                    const g = chipGeom(chip);
+                    card.style.left = g.left + 'px';
+                    card.style.width = g.width + 'px';
+                    card.style.maxHeight = g.height + 'px';
+                    chip.setAttribute('aria-expanded', 'false');
+                }
+                if (blur) blur.classList.remove('is-active');
+                // Finalize after the 260ms geometry transition settles.
+                if (card._collapseTimer) clearTimeout(card._collapseTimer);
+                card._collapseTimer = setTimeout(function () {
+                    card.hidden = true;
+                    if (chip) { chip.style.opacity = ''; chip.style.pointerEvents = ''; }
+                    card._collapseTimer = null;
+                }, 300);
+            }
+
+            function wire(chipId, cardId, headerId, closeId) {
+                const chip = document.getElementById(chipId);
+                const card = document.getElementById(cardId);
+                const header = document.getElementById(headerId);
+                const close = document.getElementById(closeId);
+                if (!chip || !card) return;
+                chip.dataset.card = cardId;
+                chip.addEventListener('click', (e) => { e.stopPropagation(); openCard(chip, card, header); });
+                close.addEventListener('click', (e) => { e.stopPropagation(); collapse(card); });
+            }
+
+            wire('mx-qs-chip', 'mx-qs-card', 'mx-qs-header', 'mx-qs-close');
+            wire('mx-da-chip', 'mx-da-card', 'mx-da-header', 'mx-da-close');
+
+            // Outside click within the stage collapses open cards.
+            stage.addEventListener('pointerdown', (e) => {
+                stage.querySelectorAll('.mx-card:not([hidden])').forEach((card) => {
+                    const chip = document.querySelector('[data-card="' + card.id + '"]');
+                    if (!card.contains(e.target) && !(chip && chip.contains(e.target))) collapse(card);
+                });
+            });
+        })();
+
+        // ── BG fade-out demo sequence: question → reasoning → answer → fade ──
+        (function () {
+            const radiance = document.getElementById('bg-demo-radiance');
+            const play = document.getElementById('bg-demo-play');
+            const label = document.getElementById('bg-demo-steplabel');
+            if (!radiance || !play) return;
+            const stepQ = document.getElementById('bg-step-q');
+            const stepR = document.getElementById('bg-step-r');
+            const stepA = document.getElementById('bg-step-a');
+            let timers = [];
+
+            function clearAll() { timers.forEach(clearTimeout); timers = []; }
+
+            function reset() {
+                clearAll();
+                [stepQ, stepR, stepA].forEach((s) => s.classList.remove('is-visible'));
+                radiance.style.transition = 'none';
+                radiance.style.transform = '';
+                radiance.style.opacity = '';
+                void radiance.offsetWidth; // flush so the next fade animates from full
+                label.innerHTML = 'Press <strong>Play</strong> to run the sequence';
+            }
+
+            function run() {
+                reset();
+                // 1 · Question asked
+                timers.push(setTimeout(() => {
+                    stepQ.classList.add('is-visible');
+                    label.innerHTML = '1 · <strong>Question asked</strong>';
+                }, 300));
+                // 2 · Reasoning
+                timers.push(setTimeout(() => {
+                    stepR.classList.add('is-visible');
+                    label.innerHTML = '2 · <strong>Reasoning</strong> — Warming up…';
+                }, 1500));
+                // 3 · Answer loaded
+                timers.push(setTimeout(() => {
+                    stepA.classList.add('is-visible');
+                    label.innerHTML = '3 · <strong>Answer loaded</strong>';
+                }, 3200));
+                // Background fade begins 530ms after the answer settles (480ms
+                // answer scroll + 50ms) — identical to the real animateBgTo call.
+                timers.push(setTimeout(() => {
+                    radiance.style.transition =
+                        'opacity 5000ms cubic-bezier(0.0, 0.0, 0.2, 1), transform 5000ms cubic-bezier(0.0, 0.0, 0.2, 1)';
+                    radiance.style.transform = 'translateY(-500px)'; // exact real value
+                    radiance.style.opacity = '0';
+                    label.innerHTML = '3 · <strong>Answer loaded</strong> — background fades up &amp; out';
+                }, 3200 + 530));
+            }
+
+            play.addEventListener('click', run);
+            reset();
+        })();
+
+        // Copy-to-clipboard for code blocks.
+        document.querySelectorAll('.specs-code-copy').forEach((btn) => {
+            btn.addEventListener('click', async () => {
+                const pre = document.getElementById(btn.dataset.copy);
+                if (!pre) return;
+                try {
+                    await navigator.clipboard.writeText(pre.innerText);
+                    const original = btn.textContent;
+                    btn.textContent = 'Copied';
+                    setTimeout(() => { btn.textContent = original; }, 1400);
+                } catch (e) { /* clipboard unavailable */ }
+            });
+        });
+    </script>
+</body>
+</html>

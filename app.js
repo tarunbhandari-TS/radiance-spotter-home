@@ -1299,6 +1299,8 @@
                     let bubble = null;
                     let scrollEl = null;
 
+                    let answerBarController = { scheduleFirstHide: () => {} };
+
                     if (promptBarEl) {
                         const pRect       = promptBarEl.getBoundingClientRect();
                         const barRect     = answerBarEl ? answerBarEl.getBoundingClientRect() : null;
@@ -1342,6 +1344,36 @@
                             } : {}),
                         });
                         document.body.appendChild(scrollEl);
+
+                        // Auto-hide / scroll-up-reveal for the answer title bar.
+                        // scheduleFirstHide() must be called externally once the answer chart loads.
+                        answerBarController = (function wireAnswerBarScroll(scroll, bar) {
+                            if (!bar) return { scheduleFirstHide: () => {} };
+                            let lastScrollTop = 0;
+                            let hideTimer = null;
+
+                            function barVisible(show) {
+                                bar.style.transition = 'transform 260ms cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+                                bar.style.transform = show ? 'translateY(0)' : 'translateY(-100%)';
+                            }
+
+                            function scheduleHide() {
+                                clearTimeout(hideTimer);
+                                hideTimer = setTimeout(() => barVisible(false), 5000);
+                            }
+
+                            scroll.addEventListener('scroll', function onAnswerScroll() {
+                                const st = scroll.scrollTop;
+                                const scrollingUp = st < lastScrollTop;
+                                lastScrollTop = st;
+                                if (scrollingUp) {
+                                    barVisible(true);
+                                    scheduleHide();
+                                }
+                            }, { passive: true });
+
+                            return { scheduleFirstHide: scheduleHide };
+                        })(scrollEl, document.getElementById('answer-title-bar'));
 
                         const questionRow = document.createElement('div');
                         questionRow.className = 'question-row';
@@ -1593,6 +1625,8 @@
                                         window.setTimeout(() => {
                                             answerEl.style.opacity = '1';
                                             answerEl.style.transform = 'translateY(0)';
+                                            // Answer chart is now visible — start the 5s hide countdown
+                                            answerBarController.scheduleFirstHide();
                                             const inset = answerBarInset();
                                             const sRect = scrollEl.getBoundingClientRect();
                                             const blockRect = block.getBoundingClientRect();
